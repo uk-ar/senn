@@ -1,0 +1,105 @@
+## coffee -csb
+`
+// ==UserScript==
+// @name           nearly search
+// @namespace      http://hoge
+// @include        https://*
+// @include        http://*
+// @include        http://*
+// ==/UserScript==
+`
+# // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
+#f = (x) -> x + 4
+$X = window.Minibuffer.$X;
+$N = window.Minibuffer.$N;
+$ = jQuery;
+
+siteinfo = window.LDRize.getSiteinfo();
+paragraphs = $X siteinfo['paragraph']
+keywordsWidth=100
+keywordsOver = -> $("#keywords:not(:animated)", this).css("display":"block").animate({"width":keywordsWidth},"fast","swing")
+keywordsOut = -> $("#keywords:not(:animated)", this).animate({"width":0},"fast","swing", -> $(this).css("display":"none"))
+barOver = -> $("#bar:not(:animated)",this).css("display":"block")
+barOut = -> $("#bar:not(:animated)",this).css("display":"none")
+####
+$("#bar").remove()
+####
+barWidth=30
+bar = $('<div>').text('hoge').attr("id","bar").css("background":"black","position":"absolute","z-index":1000,"border-radius":8,"width":barWidth,"height":200,"opacity":0.8,"margin-left":-barWidth).hover(keywordsOver, keywordsOut);
+keywords = $('<div>').attr("id","keywords").css("background":"black","position":"absolute","z-index":1001,"border-radius":8,"left":barWidth,"height":200,"opacity":1,"width":0,"display":"none")
+list=
+$('<a>').text("hoga").css("color":"white").attr("href":"http://www.google.co.jp/")
+keywords.prepend(list)
+bar.prepend(keywords)
+$(paragraphs[0]).prepend(bar)
+$(paragraphs[0]).hover(barOver,barOut)
+
+
+$('#trev a').each(-> $(this).hover(->$(this).fadeTo("normal", 0.2),
+->$(this).fadeTo("normal", 1)))
+####
+$("#glayLayer").remove()
+####
+# position fixed because scroll
+$("body").append($("<div>").attr("id":"glayLayer").css("background":"black","z-index":1000,"opacity":0.8,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
+$("#glayLayer").show()
+#$("#glayLayer").show().append($(paragraphs[0]).clone().css("z-index":0).css("background":"white","position":"absolute").css("top":$(paragraphs[0]).offset().top,"left":$(paragraphs[0]).offset().left))
+# position relative because z-index
+$(paragraphs[0]).css("z-index":1003,"position":"relative","background-color":"white")
+  #$("#glayLayer").show().append($(paragraphs[0]).clone().css("z-index":0).css("background":"white","position":"absolute").css("top":$(paragraphs[0]).offset().top,"left":$(paragraphs[0]).offset().left))
+
+  #
+  # var keywords=$X('//*[@id="trev"]');
+
+  # function over(e){
+  #   var elem = e;
+  #   return function(){
+  #     elem.forEach(function(node){
+	# $(paragraphs[node]).fadeTo("normal", 0.2);
+	# //paragraphs[node].style.background = "#000000"
+  #     });
+  #   };
+  # }
+
+  # function out(e){
+  #   var elem = e;
+  #   return function(){
+  #     elem.forEach(function(node){
+	# $(paragraphs[node]).fadeTo("normal", 1);
+	# //paragraphs[node].style.background = ""
+  #     });
+  #   };
+  # }
+  # queries=$X('descendant::a',keywords[0]);
+  # $(queries[1]).hover(over([0, 2]), out([0, 2]));
+  # $(queries[0]).hover(over([1]), out([1]));
+
+
+#, -> $(this).css("display":"block"))
+# for target in paragraphs
+#   do (target) ->
+#     console.log(target)
+#     target.insertBefore($('div'
+#     ,{id: "id",style: "background: red;position:absolute;z-index: 1000;"}
+#     ,"hoge").hover ->
+#       self.style.background = "#000000"
+#     ,target.firstChild)
+
+# paragraphs.forEach (target) ->
+#         console.log(target);
+#         target.insertBefore($N('div',{id: "id",style: "background: red;position:absolute;z-index: 1000;"},"hoge"),target.firstChild);
+
+#(shadow-with-suppressing-messages 1)
+#     target.insertBefore(
+#     $N('div',{id: "id",style: "height:#{target.scrollHeight}px;background: red;position:absolute;z-index: 1000;"},"hoge"),
+#     target.firstChild)
+
+# paragraphs.forEach(function(target){
+# console.log(target);
+#     target.insertBefore($N('div',{id: "id",style: "background: red;position:absolute;z-index: 1000;"},"hoge"),target.firstChild);
+#   });
+paragraphs[0].scrollHeight;
+
+# Local Variables:
+# mode: coffee
+# End:

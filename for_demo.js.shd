@@ -1,0 +1,7 @@
+
+# need jquery ui
+#slideLeft = -> $("#keywords", this).show('slide', {direction: 'right'}, 1000)
+#slideRight = -> $("#keywords", this).hide('slide', {direction: 'left'}, 1000)
+
+# .fadeIn("fast")
+# .fadeOut("fast")
