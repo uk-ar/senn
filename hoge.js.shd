@@ -34,11 +34,11 @@ $("#base").remove()
 ####
 barWidth=30
 baseZindex = 1000
+#$(paragraphs).each ->
 base = $('<div>').attr("id","base")
   .css("position":"absolute","z-index":baseZindex,"width":barWidth,"height":200,"opacity":0.8,"margin-left":-barWidth)
-  .text("hoge")
 bar = $('<div>').attr("id","bar")
-  .css("background-color":"black","border-radius":8,"width":barWidth,"height":200).hover(showKeywords, hideKeywords).text("hogu")
+  .css("background-color":"black","border-radius":8,"width":barWidth,"height":200).hover(showKeywords, hideKeywords)
 keywords = $('<div>').attr("id","keywords")
   .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":200,"width":100)
 list=
@@ -49,78 +49,49 @@ keywords.hide()
 keywords.prepend(list)
 bar.prepend(keywords)
 base.prepend(bar)
+  #$(this).
 $(paragraphs[0]).prepend(base)
 $(paragraphs[0]).hover(showBar,hideBar)
 ####
+# $X = window.Minibuffer.$X;
+# $N = window.Minibuffer.$N;
+# $ = jQuery;
+
+# siteinfo = window.LDRize.getSiteinfo();
+# paragraphs = $X siteinfo['paragraph']
+
+baseZindex = 1000
 $("#glayLayer").remove()
 ####
 # position fixed because scroll
 $("body").append(
-  $("<div>")
-  .attr("id":"glayLayer")
-  .css("background":"black","z-index":1000,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
+  $("<div>").attr("id":"glayLayer")
+  .css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
 # position relative because z-index
-$(paragraphs[0])
-  .css("z-index":1001,"position":"relative","background-color":"white","border-radius":8)
+$(paragraphs)
+  .css("z-index":baseZindex,"position":"relative","background-color":"white","border-radius":8)
 
-$('#trev a').css("z-index":1001,"border-radius":3).each ->
-  $(this).hover ->
+genShow = (indexes) ->
+  @indexes = indexes
+  ->
     $("#glayLayer").fadeIn("fast")
-    $(this).css("position":"relative","background-color":"white")
-  , ->
+    $(this).css("z-index":baseZindex+1)
+    for index in indexes
+      do (index) ->
+        $(paragraphs[index]).css("z-index":baseZindex+1)
+
+genHide = (indexes) ->
+  @indexes = indexes
+  ->
     $("#glayLayer").fadeOut("fast")
-    $(this).css("position":"","background-color":"")
+    $(this).css("z-index":baseZindex)
+    for index in indexes
+      do (index) ->
+        $(paragraphs[index]).css("z-index":baseZindex)
 
-  #
-  # var keywords=$X('//*[@id="trev"]');
+$('#trev a').css("position":"relative","border-radius":3,"background-color":"white").each ->
+  $(this).hover genShow([0, 3]), genHide([0, 3])
 
-  # function over(e){
-  #   var elem = e;
-  #   return function(){
-  #     elem.forEach(function(node){
-	# $(paragraphs[node]).fadeTo("normal", 0.2);
-	# //paragraphs[node].style.background = "#000000"
-  #     });
-  #   };
-  # }
-
-  # function out(e){
-  #   var elem = e;
-  #   return function(){
-  #     elem.forEach(function(node){
-	# $(paragraphs[node]).fadeTo("normal", 1);
-	# //paragraphs[node].style.background = ""
-  #     });
-  #   };
-  # }
-  # queries=$X('descendant::a',keywords[0]);
-  # $(queries[1]).hover(over([0, 2]), out([0, 2]));
-  # $(queries[0]).hover(over([1]), out([1]));
-
-
-#, -> $(this).css("display":"block"))
-# for target in paragraphs
-#   do (target) ->
-#     console.log(target)
-#     target.insertBefore($('div'
-#     ,{id: "id",style: "background: red;position:absolute;z-index: 1000;"}
-#     ,"hoge").hover ->
-#       self.style.background = "#000000"
-#     ,target.firstChild)
-
-# paragraphs.forEach (target) ->
-#         console.log(target);
-#         target.insertBefore($N('div',{id: "id",style: "background: red;position:absolute;z-index: 1000;"},"hoge"),target.firstChild);
-
-#(shadow-with-suppressing-messages 1)
-#     target.insertBefore(
-#     $N('div',{id: "id",style: "height:#{target.scrollHeight}px;background: red;position:absolute;z-index: 1000;"},"hoge"),
-#     target.firstChild)
-
-# paragraphs.forEach(function(target){
-# console.log(target);
-#     target.insertBefore($N('div',{id: "id",style: "background: red;position:absolute;z-index: 1000;"},"hoge"),target.firstChild);
-#   });
 paragraphs[0].scrollHeight;
 
 # Local Variables:
