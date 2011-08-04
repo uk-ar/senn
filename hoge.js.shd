@@ -16,43 +16,52 @@ $ = jQuery;
 
 siteinfo = window.LDRize.getSiteinfo();
 paragraphs = $X siteinfo['paragraph']
-keywordsWidth=100
-keywordsOver = ->
+
+showKeywords = ->
   $("#keywords:not(:animated)", this)
-  .css("display":"block")
-  .animate({"width":keywordsWidth},"fast","swing")
-keywordsOut = ->
+  .animate({"width":"show"},"fast")
+hideKeywords = ->
   $("#keywords:not(:animated)", this)
-  .animate({"width":0},"fast","swing", ->
-     $(this).css("display":"none"))
-barOver = ->
+  .animate({"width":"hide"},"fast")
+showBar = ->
   $("#bar:not(:animated)",this)
   .css("display":"block")
-barOut = ->
+hideBar = ->
   $("#bar:not(:animated)",this)
   .css("display":"none")
 ####
 $("#base").remove()
 ####
 barWidth=30
-base = $('<div>').attr("id","base").css("position":"absolute","z-index":1000,"border-radius":8,"width":barWidth,"height":200,"opacity":1,"margin-left":-barWidth)
-bar = $('<div>').attr("id","bar").css("background":"black","z-index":1000,"border-radius":8,"width":barWidth,"height":200,"opacity":0.8).hover(keywordsOver, keywordsOut);
-keywords = $('<div>').attr("id","keywords").css("background":"black","position":"absolute","z-index":1001,"border-radius":8,"left":barWidth,"height":200,"opacity":1,"width":0,"display":"none")
+baseZindex = 1000
+base = $('<div>').attr("id","base")
+  .css("position":"absolute","z-index":baseZindex,"width":barWidth,"height":200,"opacity":0.8,"margin-left":-barWidth)
+  .text("hoge")
+bar = $('<div>').attr("id","bar")
+  .css("background-color":"black","border-radius":8,"width":barWidth,"height":200).hover(showKeywords, hideKeywords).text("hogu")
+keywords = $('<div>').attr("id","keywords")
+  .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":200,"width":100)
 list=
-$('<a>').text("hoga").css("color":"white").attr("href":"http://www.google.co.jp/")
+$('<a>').text("hoga")
+  .css("color":"white").attr("href":"http://www.google.co.jp/")
+bar.hide()
+keywords.hide()
 keywords.prepend(list)
-base.prepend(bar)
 bar.prepend(keywords)
+base.prepend(bar)
 $(paragraphs[0]).prepend(base)
-$(paragraphs[0]).hover(barOver,barOut)
-
+$(paragraphs[0]).hover(showBar,hideBar)
 ####
 $("#glayLayer").remove()
 ####
 # position fixed because scroll
-$("body").append($("<div>").attr("id":"glayLayer").css("background":"black","z-index":1000,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
+$("body").append(
+  $("<div>")
+  .attr("id":"glayLayer")
+  .css("background":"black","z-index":1000,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
 # position relative because z-index
-$(paragraphs[0]).css("z-index":1001,"position":"relative","background-color":"white","border-radius":8)
+$(paragraphs[0])
+  .css("z-index":1001,"position":"relative","background-color":"white","border-radius":8)
 
 $('#trev a').css("z-index":1001,"border-radius":3).each ->
   $(this).hover ->
@@ -60,7 +69,7 @@ $('#trev a').css("z-index":1001,"border-radius":3).each ->
     $(this).css("position":"relative","background-color":"white")
   , ->
     $("#glayLayer").fadeOut("fast")
-    $(this).css("position":"static","background-color":"")
+    $(this).css("position":"","background-color":"")
 
   #
   # var keywords=$X('//*[@id="trev"]');
