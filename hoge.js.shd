@@ -13,45 +13,70 @@
 $X = window.Minibuffer.$X;
 $N = window.Minibuffer.$N;
 $ = jQuery;
-
 siteinfo = window.LDRize.getSiteinfo();
 paragraphs = $X siteinfo['paragraph']
 
 showKeywords = ->
-  $("#keywords:not(:animated)", this)
+  $(".keywords:not(:animated)", this)
   .animate({"width":"show"},"fast")
 hideKeywords = ->
-  $("#keywords:not(:animated)", this)
+  $(".keywords:not(:animated)", this)
   .animate({"width":"hide"},"fast")
 showBar = ->
-  $("#bar:not(:animated)",this)
+  $(".bar:not(:animated)",this)
   .css("display":"block")
 hideBar = ->
-  $("#bar:not(:animated)",this)
+  $(".bar:not(:animated)",this)
   .css("display":"none")
+genShow = (indexes) ->
+  @indexes = indexes
+  ->
+    $("#glayLayer").fadeIn("fast")
+    $(this).css("z-index":baseZindex+1)
+    for index in indexes
+      do (index) ->
+        $(paragraphs[index]).css("z-index":baseZindex+1)
+
+genHide = (indexes) ->
+  @indexes = indexes
+  ->
+    $("#glayLayer").fadeOut "fast",
+    ->
+      $(this).css("z-index":baseZindex)
+      for index in indexes
+        do (index) ->
+          $(paragraphs[index]).css("z-index":baseZindex)
 ####
-$("#base").remove()
+$(".base").remove()
 ####
 barWidth=30
 baseZindex = 1000
-#$(paragraphs).each ->
-base = $('<div>').attr("id","base")
-  .css("position":"absolute","z-index":baseZindex,"width":barWidth,"height":200,"opacity":0.8,"margin-left":-barWidth)
-bar = $('<div>').attr("id","bar")
-  .css("background-color":"black","border-radius":8,"width":barWidth,"height":200).hover(showKeywords, hideKeywords)
-keywords = $('<div>').attr("id","keywords")
-  .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":200,"width":100)
-list=
-$('<a>').text("hoga")
-  .css("color":"white").attr("href":"http://www.google.co.jp/")
-bar.hide()
-keywords.hide()
-keywords.prepend(list)
-bar.prepend(keywords)
-base.prepend(bar)
-  #$(this).
-$(paragraphs[0]).prepend(base)
-$(paragraphs[0]).hover(showBar,hideBar)
+$(paragraphs).each ->
+  height = $(this).height()#attr("scrollHeight")
+  base = $('<div>').attr("class","base")
+    .css("position":"absolute","z-index":baseZindex,"width":barWidth,"height":height,"opacity":0.8,"margin-left":-barWidth)
+  bar = $('<div>').attr("class","bar")
+    .css("background-color":"black","border-radius":8,"width":barWidth,"height":height).hover(showKeywords, hideKeywords)
+  keywords = $('<div>').attr("class","keywords")
+    .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":height,"width":100)
+  ul=$("<ul>").css("padding":10)
+  for obj in [["hoge",[1]],["fuga",[0,2]]]
+    li=$('<a>').text(obj[0])
+      .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(obj[1]),genHide(obj[1])).parent()
+    ul.append(li)
+  bar.hide()
+  keywords.hide()
+  keywords.prepend(ul)
+  bar.prepend(keywords)
+  base.prepend(bar)
+  $(this).prepend(base)
+  $(this).hover(->
+    console.log($(".bar:not(:animated)",this).show())
+  ,->console.log($(".bar:not(:animated)",this).hide()))
+#$(paragraphs[0]).attr('offsetHeight')
+  #$(this).hover(showBar,hideBar)
+# $(paragraphs[0]).prepend(base)
+# $(paragraphs[0]).hover(showBar,hideBar)
 ####
 # $X = window.Minibuffer.$X;
 # $N = window.Minibuffer.$N;
@@ -71,29 +96,9 @@ $("body").append(
 $(paragraphs)
   .css("z-index":baseZindex,"position":"relative","background-color":"white","border-radius":8)
 
-genShow = (indexes) ->
-  @indexes = indexes
-  ->
-    $("#glayLayer").fadeIn("fast")
-    $(this).css("z-index":baseZindex+1)
-    for index in indexes
-      do (index) ->
-        $(paragraphs[index]).css("z-index":baseZindex+1)
-
-genHide = (indexes) ->
-  @indexes = indexes
-  ->
-    $("#glayLayer").fadeOut("fast")
-    $(this).css("z-index":baseZindex)
-    for index in indexes
-      do (index) ->
-        $(paragraphs[index]).css("z-index":baseZindex)
-
-$('#trev a').css("position":"relative","border-radius":3,"background-color":"white").each ->
-  $(this).hover genShow([0, 3]), genHide([0, 3])
-
-paragraphs[0].scrollHeight;
-
+otherKeywords=$('#trev a').css("position":"relative","border-radius":3,"background-color":"white").each ->
+$(otherKeywords[0]).hover genShow([0, 3]), genHide([0, 3])
+$(otherKeywords[1]).hover genShow([1]), genHide([1])
 # Local Variables:
 # mode: coffee
 # End:
