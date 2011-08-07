@@ -21,9 +21,9 @@ speed="slow"
 showKeywords = (context) ->
   $("div.keywords:not(:animated)", context)
   .animate({"width":"show"},speed)
-hideKeywords = (context) ->
+hideKeywords = (context,callback) ->
   $("div.keywords", context)
-  .animate({"width":"hide"},speed)
+  .animate({"width":"hide"},speed,"swing",callback)
 showBar = (context) ->
   #$("div.bar:not(:animated)",this).show()
   $("div.bar:not(:animated)",context).show()
@@ -31,7 +31,8 @@ hideBar = (context)->
   #$("div.bar:not(:animated)",this).hide()
   #$("div.bar:not(:animated)").hide()
   $("#glayLayer").fadeOut speed,->
-    $("div.bar:not(:animated)",context).hide()
+    hideKeywords context,->
+      $("div.bar:not(:animated)",context).hide()
 genShow = (indexes) ->
   @indexes = indexes
   ->
