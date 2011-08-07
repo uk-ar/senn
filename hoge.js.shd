@@ -24,18 +24,18 @@ hideKeywords = ->
   $("div.keywords:not(:animated)", $(this).parent())
   .animate({"width":"hide"},"fast")
 showBar = ->
-  $("div.bar:not(:animated)",this).show()
-  #$("div.bar:not(:animated)",$(this).prev()).show()
+  #$("div.bar:not(:animated)",this).show()
+  $("div.bar:not(:animated)",$(this).prev()).show()
 hideBar = ->
-  $("div.bar:not(:animated)",this).hide()
-  #$("div.bar:not(:animated)",$(this).prev()).hide()
+  #$("div.bar:not(:animated)",this).hide()
+  $("div.bar:not(:animated)",$(this).prev()).hide()
 genShow = (indexes) ->
   @indexes = indexes
   ->
     for index in indexes
       do (index) ->
         $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
-    console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
+    #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
     $("#glayLayer").fadeIn("fast")
     #$(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
 
@@ -69,18 +69,19 @@ $(paragraphs).each ->
     $("div.bar:not(:animated)",this).show
   ,->
     $("div.bar:not(:animated)",this).hide
-  bar.hide()
+  bar#.hide()
   keywords.hide()
   bar.hover(showKeywords, hideKeywords)
   keywords.prepend(ul)
   base.append(bar)
   bar.append(keywords)
-  #base.hover ->
-  #  $("div.bar:not(:animated)",this).show()
-  #,-> $("div.bar:not(:animated)",this).hide()
-  $(this).prepend(base)
+  base.hover ->
+    $("div.bar:not(:animated)",this).show()
+  ,-> $("div.bar:not(:animated)",this).hide()
+  $(this).before(base)
   $(this).css("z-index":baseZindex+1)
-  $(this).hover(showBar,hideBar)
+  $(this).mouseover(showBar)
+  #$(this).mouseout(hideBar)
   #$(this).css(showBar,hideBar)
   #$(this).hover ->
   #  $("div.bar:not(:animated)",$(this).prev()).show()
