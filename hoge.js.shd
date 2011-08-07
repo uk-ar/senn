@@ -18,10 +18,10 @@ paragraphs = $X siteinfo['paragraph']
 baseZindex = 1000
 
 showKeywords = ->
-  $("div.keywords:not(:animated)", this)
+  $("div.keywords:not(:animated)", $(this).parent())
   .animate({"width":"show"},"fast")
 hideKeywords = ->
-  $("div.keywords:not(:animated)", this)
+  $("div.keywords:not(:animated)", $(this).parent())
   .animate({"width":"hide"},"fast")
 showBar = ->
   $("div.bar:not(:animated)",this).show()
@@ -34,7 +34,8 @@ genShow = (indexes) ->
   ->
     for index in indexes
       do (index) ->
-        $(paragraphs[index]).css("background-color":"white")#.css("z-index":baseZindex+1)
+        $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
+    console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
     $("#glayLayer").fadeIn("fast")
     #$(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
 
@@ -46,7 +47,7 @@ genHide = (indexes) ->
     ->
       for index in indexes
         do (index) ->
-          $(paragraphs[index])#.css("z-index":baseZindex)#.css("background-color":"")
+          $(paragraphs[index]).css("z-index":baseZindex)#.css("background-color":"")
 ####
 $("div.base").remove()
 ####
@@ -54,9 +55,9 @@ barWidth=30
 $(paragraphs).each ->
   height = $(this).height()#attr("scrollHeight")
   base = $('<div>').attr("class","base")
-    .css("position":"absolute","z-index":baseZindex+2,"width":barWidth,"height":height,"opacity":0.8,"margin-left":-barWidth).css("background-color":"red")
+    .css("position":"absolute","z-index":baseZindex+3,"width":barWidth*2,"height":height,"opacity":0.8,"margin-left":-barWidth,"float":"left").css("background-color":"red")
   bar = $('<div>').attr("class","bar")
-    .css("background-color":"black","border-radius":8,"width":barWidth,"height":height)
+    .css("background-color":"black","border-radius":8,"width":barWidth,"height":height,"float":"left")
   keywords = $('<div>').attr("class","keywords")
     .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":height,"width":100)
   ul=$("<ul>").css("padding":10)
@@ -72,8 +73,11 @@ $(paragraphs).each ->
   keywords.hide()
   bar.hover(showKeywords, hideKeywords)
   keywords.prepend(ul)
-  bar.prepend(keywords)
-  base.prepend(bar)
+  base.append(bar)
+  bar.append(keywords)
+  #base.hover ->
+  #  $("div.bar:not(:animated)",this).show()
+  #,-> $("div.bar:not(:animated)",this).hide()
   $(this).prepend(base)
   $(this).css("z-index":baseZindex+1)
   $(this).hover(showBar,hideBar)
@@ -104,7 +108,7 @@ $("body").append(
   .css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
 # position relative because z-index
 $(paragraphs)
-  .css("z-index":baseZindex,"position":"relative","border-radius":8,"z-index":baseZindex+2)
+  .css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
 
 otherKeywords=$('#trev a').css("position":"relative","border-radius":3,"background-color":"white").each ->
 $(otherKeywords[0]).hover genShow([0, 3]), genHide([0, 3])
