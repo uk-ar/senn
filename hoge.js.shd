@@ -16,19 +16,22 @@ $ = jQuery;
 siteinfo = window.LDRize.getSiteinfo();
 paragraphs = $X siteinfo['paragraph']
 baseZindex = 1000
+speed="slow"
 
-showKeywords = ->
-  $("div.keywords:not(:animated)", $(this).parent())
-  .animate({"width":"show"},"fast")
-hideKeywords = ->
-  $("div.keywords:not(:animated)", $(this).parent())
-  .animate({"width":"hide"},"fast")
-showBar = ->
+showKeywords = (context) ->
+  $("div.keywords:not(:animated)", context)
+  .animate({"width":"show"},speed)
+hideKeywords = (context) ->
+  $("div.keywords", context)
+  .animate({"width":"hide"},speed)
+showBar = (context) ->
   #$("div.bar:not(:animated)",this).show()
-  $("div.bar:not(:animated)",$(this).prev()).show()
-hideBar = ->
+  $("div.bar:not(:animated)",context).show()
+hideBar = (context)->
   #$("div.bar:not(:animated)",this).hide()
-  $("div.bar:not(:animated)",$(this).prev()).hide()
+  #$("div.bar:not(:animated)").hide()
+  $("#glayLayer").fadeOut speed,->
+    $("div.bar:not(:animated)",context).hide()
 genShow = (indexes) ->
   @indexes = indexes
   ->
@@ -66,22 +69,31 @@ $(paragraphs).each ->
       .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(obj[1]),genHide(obj[1])).parent()
     ul.append(li)
   base.hover ->
-    $("div.bar:not(:animated)",this).show
+    #$("div.bar:not(:animated)",this).show()
+    showBar(this)
   ,->
-    $("div.bar:not(:animated)",this).hide
-  bar#.hide()
+    #$("div.bar:not(:animated)",this).hide()
+    hideBar(this)
+  bar.hide()
   keywords.hide()
-  bar.hover(showKeywords, hideKeywords)
+  bar.hover ->
+    showKeywords($(this).parent())
+  ,->
+    hideKeywords($(this).parent())
   keywords.prepend(ul)
   base.append(bar)
   bar.append(keywords)
-  base.hover ->
-    $("div.bar:not(:animated)",this).show()
-  ,-> $("div.bar:not(:animated)",this).hide()
+  #base.hover ->
+  #  $("div.bar:not(:animated)",this).show()
+  #,->
+  #  $("div.bar:not(:animated)",this).hide()
   $(this).before(base)
   $(this).css("z-index":baseZindex+1)
-  $(this).mouseover(showBar)
-  #$(this).mouseout(hideBar)
+  $(this).mouseover ->
+    #$(this).prev().attr("id":"curr")
+    showBar($(this).prev())
+  $(this).mouseout ->
+    hideBar($(this).prev())
   #$(this).css(showBar,hideBar)
   #$(this).hover ->
   #  $("div.bar:not(:animated)",$(this).prev()).show()
