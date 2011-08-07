@@ -28,10 +28,14 @@ showBar = (context) ->
   #$("div.bar:not(:animated)",this).show()
   #console.log(context)
   $("div.bar:not(:animated)",context).show()
+showGraylayer = (callback)->
+  $("#graylayer").fadeIn speed, callback
+hideGraylayer = (callback)->
+  $("#graylayer").fadeOut speed, callback
 hideBar = (context)->
   #$("div.bar:not(:animated)",this).hide()
   #$("div.bar:not(:animated)").hide()
-  $("#glayLayer").fadeOut speed,->
+  hideGraylayer ->
     #to wait hideKeywords effect wrong
     #hideKeywords context,->
     $("div.bar:not(:animated)",context).hide()
@@ -42,15 +46,14 @@ genShow = (indexes) ->
       do (index) ->
         $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
     #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
-    $("#glayLayer").fadeIn("fast")
+    showGraylayer()
     $(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
 
 genHide = (indexes) ->
   @indexes = indexes
   ->
     $(this).css("z-index":baseZindex)#for other keyword
-    $("#glayLayer").fadeOut "fast",
-    ->
+    hideGraylayer ->
       for index in indexes
         do (index) ->
           $(paragraphs[index]).css("z-index":baseZindex)#.css("background-color":"")
@@ -61,7 +64,7 @@ barWidth=30
 $(paragraphs).each ->
   height = $(this).height()#attr("scrollHeight")
   base = $('<div>').attr("class","base")
-    .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth*2,"margin-left":-barWidth,"opacity":0.8,"float":"left").css("background-color":"red")#
+    .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth*2,"margin-left":-barWidth,"opacity":0.8,"float":"left")#.css("background-color":"red")#
   bar = $('<div>').attr("class","bar")
     .css("background-color":"black","border-radius":8,"width":barWidth,"height":height,"float":"left")
   keywords = $('<div>').attr("class","keywords")
@@ -126,11 +129,11 @@ $(paragraphs).each ->
 # paragraphs = $X siteinfo['paragraph']
 
 baseZindex = 1000
-$("#glayLayer").remove()
+$("#graylayer").remove()
 ####
 # position fixed because scroll
 $("body").append(
-  $("<div>").attr("id":"glayLayer")
+  $("<div>").attr("id":"graylayer")
   .css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
 # position relative because z-index
 $(paragraphs)
