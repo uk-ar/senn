@@ -16,7 +16,7 @@ $ = jQuery;
 siteinfo = window.LDRize.getSiteinfo();
 paragraphs = $X siteinfo['paragraph']
 baseZindex = 1000
-speed="slow"
+speed="fast"
 
 showKeywords = (context) ->
   $("div.keywords:not(:animated)", context)
@@ -26,13 +26,15 @@ hideKeywords = (context,callback) ->
   .animate({"width":"hide"},speed,"swing",callback)
 showBar = (context) ->
   #$("div.bar:not(:animated)",this).show()
+  #console.log(context)
   $("div.bar:not(:animated)",context).show()
 hideBar = (context)->
   #$("div.bar:not(:animated)",this).hide()
   #$("div.bar:not(:animated)").hide()
   $("#glayLayer").fadeOut speed,->
-    hideKeywords context,->
-      $("div.bar:not(:animated)",context).hide()
+    #to wait hideKeywords effect wrong
+    #hideKeywords context,->
+    $("div.bar:not(:animated)",context).hide()
 genShow = (indexes) ->
   @indexes = indexes
   ->
@@ -41,12 +43,12 @@ genShow = (indexes) ->
         $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
     #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
     $("#glayLayer").fadeIn("fast")
-    #$(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
+    $(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
 
 genHide = (indexes) ->
   @indexes = indexes
   ->
-    #$(this).css("z-index":baseZindex)#for other keyword
+    $(this).css("z-index":baseZindex)#for other keyword
     $("#glayLayer").fadeOut "fast",
     ->
       for index in indexes
@@ -59,7 +61,7 @@ barWidth=30
 $(paragraphs).each ->
   height = $(this).height()#attr("scrollHeight")
   base = $('<div>').attr("class","base")
-    .css("position":"absolute","z-index":baseZindex+3,"width":barWidth*2,"height":height,"opacity":0.8,"margin-left":-barWidth,"float":"left").css("background-color":"red")
+    .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth*2,"margin-left":-barWidth,"opacity":0.8,"float":"left").css("background-color":"red")#
   bar = $('<div>').attr("class","bar")
     .css("background-color":"black","border-radius":8,"width":barWidth,"height":height,"float":"left")
   keywords = $('<div>').attr("class","keywords")
@@ -69,12 +71,12 @@ $(paragraphs).each ->
     li=$('<a>').text(obj[0])
       .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(obj[1]),genHide(obj[1])).parent()
     ul.append(li)
-  base.hover ->
+  #base.hover ->
     #$("div.bar:not(:animated)",this).show()
-    showBar(this)
-  ,->
+    #showBar(this)
+  #,->
     #$("div.bar:not(:animated)",this).hide()
-    hideBar(this)
+    #hideBar(this)
   bar.hide()
   keywords.hide()
   bar.hover ->
@@ -82,19 +84,29 @@ $(paragraphs).each ->
   ,->
     hideKeywords($(this).parent())
   keywords.prepend(ul)
-  base.append(bar)
   bar.append(keywords)
   #base.hover ->
   #  $("div.bar:not(:animated)",this).show()
   #,->
   #  $("div.bar:not(:animated)",this).hide()
-  $(this).before(base)
+  #$(this).prepend(base)
+  #$(this).prepend(base)
+  base.append(bar)
+  wrapdiv = $("<div>").css("z-index":baseZindex+2)
+  $(this).wrap(wrapdiv)
+  wrapdiv=$(this).parent()
+  wrapdiv.prepend(base)
   $(this).css("z-index":baseZindex+1)
-  $(this).mouseover ->
-    #$(this).prev().attr("id":"curr")
-    showBar($(this).prev())
-  $(this).mouseout ->
-    hideBar($(this).prev())
+  wrapdiv.hover ->
+    showBar($(this))
+  ,->
+    hideBar($(this))
+  #$(this).mouseover ->
+    #showBar($(this).prev())
+  #  showBar($(this))
+  #$(this).mouseout ->
+    #hideBar($(this).prev())
+  #  hideBar($(this))
   #$(this).css(showBar,hideBar)
   #$(this).hover ->
   #  $("div.bar:not(:animated)",$(this).prev()).show()
