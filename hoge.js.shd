@@ -10,138 +10,179 @@
 `
 # // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
 #f = (x) -> x + 4
-$X = window.Minibuffer.$X;
-$N = window.Minibuffer.$N;
-$ = jQuery;
-siteinfo = window.LDRize.getSiteinfo();
-paragraphs = $X siteinfo['paragraph']
-baseZindex = 1000
-speed="fast"
+#http://www.otchy.net/20091104/use-jquery-on-greasemonkey/
 
-showKeywords = (context) ->
-  $("div.keywords:not(:animated)", context)
-  .animate({"width":"show"},speed)
-hideKeywords = (context,callback) ->
-  $("div.keywords", context)
-  .animate({"width":"hide"},speed,"swing",callback)
-showBar = (context) ->
-  #$("div.bar:not(:animated)",this).show()
-  #console.log(context)
-  $("div.bar:not(:animated)",context).show()
-showGraylayer = (callback)->
-  $("#graylayer").fadeIn speed, callback
-hideGraylayer = (callback)->
-  $("#graylayer").fadeOut speed, callback
-hideBar = (context)->
-  #$("div.bar:not(:animated)",this).hide()
-  #$("div.bar:not(:animated)").hide()
-  hideGraylayer ->
-    #to wait hideKeywords effect wrong
-    #hideKeywords context,->
-    $("div.bar:not(:animated)",context).hide()
-genShow = (indexes) ->
-  @indexes = indexes
-  ->
-    for index in indexes
-      do (index) ->
-        $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
-    #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
-    showGraylayer()
-    $(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
+((d, func) ->
+  h = d.getElementsByTagName('head')[0];
+  s1 = d.createElement("script");
+  s1.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js");
+  s1.addEventListener 'load', ->
+    s2 = d.createElement("script");
+    s2.textContent = "jQuery.noConflict();(" + func.toString() + ")(jQuery);";
+    h.appendChild(s2);
+  , false
+  h.appendChild(s1);
+)(document, ($) ->
+  $X = window.Minibuffer.$X;
+  $N = window.Minibuffer.$N;
+  $ = jQuery;
+  siteinfo = window.LDRize.getSiteinfo();
+  paragraphs = $X siteinfo['paragraph']
+  baseZindex = 1000
+  speed="fast"
 
-genHide = (indexes) ->
-  @indexes = indexes
-  ->
-    $(this).css("z-index":baseZindex)#for other keyword
-    hideGraylayer ->
+  showKeywords = (context) ->
+    $("div.keywords:not(:animated)", context)
+    .animate({"width":"show"},speed)
+  hideKeywords = (context,callback) ->
+    $("div.keywords", context)
+    .animate({"width":"hide"},speed,"swing",callback)
+  showBar = (context) ->
+    #$("div.bar:not(:animated)",this).show()
+    #console.log(context)
+    $("div.bar:not(:animated)",context).show()
+  showGlaylayer = (callback)->
+    $("#glayLayer").stop(true,true)
+    $("#glayLayer").fadeIn speed, callback
+  hideGlaylayer = (callback)->
+    $("#glayLayer").fadeOut speed, callback
+  hideBar = (context)->
+    #$("div.bar:not(:animated)",this).hide()
+    #$("div.bar:not(:animated)").hide()
+    hideGlaylayer ->
+      #to wait hideKeywords effect wrong
+      #hideKeywords context,->
+      $("div.bar:not(:animated)",context).hide()
+  paragraphZindex = baseZindex + 1
+  genShow = (indexes) ->
+    @indexes = indexes
+    ->
       for index in indexes
         do (index) ->
-          $(paragraphs[index]).css("z-index":baseZindex)#.css("background-color":"")
-####
-$("div.base").remove()
-####
-barWidth=30
-$(paragraphs).each ->
-  height = $(this).height()#attr("scrollHeight")
-  base = $('<div>').attr("class","base")
-    .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth*2,"margin-left":-barWidth,"opacity":0.8,"float":"left")#.css("background-color":"red")#
-  bar = $('<div>').attr("class","bar")
-    .css("background-color":"black","border-radius":8,"width":barWidth,"height":height,"float":"left")
-  keywords = $('<div>').attr("class","keywords")
-    .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":height,"width":100)
+          $(paragraphs[index]).css("z-index":paragraphZindex).css("background-color":"white")#
+      #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
+      showGlaylayer()
+      $(this).css("z-index":paragraphZindex)#,"position":"relative")#for other keyword
+
+  genHide = (indexes) ->
+    @indexes = indexes
+    ->
+      $(this).css("z-index":baseZindex)#for other keyword
+      hideGlaylayer ->
+        for index in indexes
+          do (index) ->
+            $(paragraphs[index]).css("z-index":baseZindex).css("background-color":"")
+  ####
+  $("div.bar").remove()
+  $("div.base").remove()
+  ####
+  barWidth=30
+  $(paragraphs).each ->
+    ####
+    $(this).unwrap() if window.flag?
+    ####
+    height = $(this).height()#attr("scrollHeight")
+    wrapdiv = $("<div>").attr("class":"wrapdiv").css("z-index":baseZindex + 2,"opacity":0.8,"position":"relative","margin-left":-barWidth,"padding-left":barWidth)
+    $(this).wrap(wrapdiv)
+    wrapdiv=$(this).parent()
+    console.log(wrapdiv)
+    $(this)#"z-index":baseZindex+1)
+    wrapdiv.hover ->
+      showBar($(this))
+    ,->
+      hideBar($(this))
+
+    base = $('<div>').attr("class","base").css("position":"absolute","z-index":baseZindex+3,"opacity":0.8,"margin-left":-barWidth,"height":height,"width":barWidth).css("background-color":"red")#.css("background-color":"green")#,"left":-barWidth,"margin-left":-barWidth,"float":"left","left":-8,"right":-8,"top":-5,"bottom":-8
+    wrapdiv.prepend(base)
+    #base.hover ->
+    #  showBar($(this))
+    #,->
+    #  hideBar($(this))
+
+    bar = $('<div>').attr("class","bar")
+      .css("background-color":"black","position":"absolute","left":0,"border-radius":8,"width":barWidth,"height":height,"float":"left")#"left":-barWidth,"z-index":baseZindex+1,
+    base.prepend(bar)
+    bar.hover ->
+      showKeywords($(this).parent())
+    ,->
+      hideKeywords($(this).parent())
+
+    keywords = $('<div>').attr("class","keywords")
+      .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":height,"width":100)#"z-index":baseZindex+2,
+    ul=$("<ul>").css("padding":10)
+    for obj in [["hoge",[1]],["fuga",[0,2]]]
+      li=$('<a>').text(obj[0])
+        .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(obj[1]),genHide(obj[1])).parent()
+      ul.append(li)
+    #base.hover ->
+      #$("div.bar:not(:animated)",this).show()
+      #showBar(this)
+    #,->
+      #$("div.bar:not(:animated)",this).hide()
+      #hideBar(this)
+    bar#.hide()
+    keywords#.hide()
+
+    keywords.prepend(ul)
+    bar.append(keywords)
+    keywords
+
+    #wrapdiv.hover ->
+    #  showBar($(this))
+    #,->
+    #  hideBar($(this))
+    #$(this).mouseover ->
+      #showBar($(this).prev())
+    #  showBar($(this))
+    #$(this).mouseout ->
+      #hideBar($(this).prev())
+    #  hideBar($(this))
+
+  ####
+  # $X = window.Minibuffer.$X;
+  # $N = window.Minibuffer.$N;
+  # $ = jQuery;
+
+  # siteinfo = window.LDRize.getSiteinfo();
+  # paragraphs = $X siteinfo['paragraph']
+
+  baseZindex = 1000
+  $("#glayLayer").remove()
+  ####
+  # position fixed because scroll
+  $("body").append(
+    $("<div>").attr("id":"glayLayer")
+    .css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
+  # position relative because z-index
+  $(paragraphs)
+    .css("z-index":baseZindex,"position":"relative","border-radius":8)#,"z-index":baseZindex+2),"background-color":"white"
+  $("#glayLayer")
+
+  otherKeywords=$('#trev a').css("position":"relative","border-radius":3,"background-color":"white").each ->
+  $(otherKeywords[0]).hover genShow([0, 3]), genHide([0, 3])
+  $(otherKeywords[1]).hover genShow([1]), genHide([1])
+
+  ####
+  $("#tooltip").remove()
+  ####
   ul=$("<ul>").css("padding":10)
-  for obj in [["hoge",[1]],["fuga",[0,2]]]
-    li=$('<a>').text(obj[0])
-      .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(obj[1]),genHide(obj[1])).parent()
-    ul.append(li)
-  #base.hover ->
-    #$("div.bar:not(:animated)",this).show()
-    #showBar(this)
-  #,->
-    #$("div.bar:not(:animated)",this).hide()
-    #hideBar(this)
-  bar.hide()
-  keywords.hide()
-  bar.hover ->
-    showKeywords($(this).parent())
-  ,->
-    hideKeywords($(this).parent())
-  keywords.prepend(ul)
-  bar.append(keywords)
-  #base.hover ->
-  #  $("div.bar:not(:animated)",this).show()
-  #,->
-  #  $("div.bar:not(:animated)",this).hide()
-  #$(this).prepend(base)
-  #$(this).prepend(base)
-  base.append(bar)
-  wrapdiv = $("<div>").css("z-index":baseZindex+2)
-  $(this).wrap(wrapdiv)
-  wrapdiv=$(this).parent()
-  wrapdiv.prepend(base)
-  $(this).css("z-index":baseZindex+1)
-  wrapdiv.hover ->
-    showBar($(this))
-  ,->
-    hideBar($(this))
-  #$(this).mouseover ->
-    #showBar($(this).prev())
-  #  showBar($(this))
-  #$(this).mouseout ->
-    #hideBar($(this).prev())
-  #  hideBar($(this))
-  #$(this).css(showBar,hideBar)
-  #$(this).hover ->
-  #  $("div.bar:not(:animated)",$(this).prev()).show()
-  #,-> $("div.bar:not(:animated)",$(this).prev()).hide()
-  #  $("div.bar:not(:animated)",this).show()
-  #,$("div.bar:not(:animated)",this).hide())
-#$(paragraphs[0]).attr('offsetHeight')
-  #$(this).hover(showBar,hideBar)
-# $(paragraphs[0]).prepend(base)
-# $(paragraphs[0]).hover(showBar,hideBar)
-####
-# $X = window.Minibuffer.$X;
-# $N = window.Minibuffer.$N;
-# $ = jQuery;
+  li=$('<a>').text("include").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
+  ul.append(li)
+  li=$('<a>').text("exclude").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
+  ul.append(li)
+  ul.wrap("<div>").parent().attr("id":"tooltip")
+  $(otherKeywords[0]).append(ul.parent())
+  $(otherKeywords[0])
+    .mouseover(->$("div.tooltip").fadeIn())
+    .mouseout(->$("div.tooltip").fadeOut())
+    .mousemove( (e)->$("div.tooltip").css("top":e.pageY, "left":e.pageX))
+  $(otherKeywords[1])
+    .mouseover(->$("div.tooltip").fadeIn())
+    .mouseout(->$("div.tooltip").fadeOut())
+    .mousemove( (e)->$("div.tooltip").css("top":e.pageY, "left":e.pageX))
+  window.flag=1
+)
 
-# siteinfo = window.LDRize.getSiteinfo();
-# paragraphs = $X siteinfo['paragraph']
-
-baseZindex = 1000
-$("#graylayer").remove()
-####
-# position fixed because scroll
-$("body").append(
-  $("<div>").attr("id":"graylayer")
-  .css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
-# position relative because z-index
-$(paragraphs)
-  .css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
-
-otherKeywords=$('#trev a').css("position":"relative","border-radius":3,"background-color":"white").each ->
-$(otherKeywords[0]).hover genShow([0, 3]), genHide([0, 3])
-$(otherKeywords[1]).hover genShow([1]), genHide([1])
 # Local Variables:
 # mode: coffee
 # End:
