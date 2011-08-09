@@ -44,7 +44,7 @@
   showGraylayer = (callback)->
     $("#graylayer").fadeIn speed, callback
   hideGraylayer = (callback)->
-    $("#graylayer").fadeOut speed, callback
+    $("#graylayer").stop(true,true).fadeOut speed, callback
   hideBar = (context)->
     #$("div.bar:not(:animated)",this).hide()
     $("div.bar:not(:animated)").hide()
