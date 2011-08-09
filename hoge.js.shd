@@ -47,11 +47,11 @@
     $("#graylayer").stop(true,true).fadeOut speed, callback
   hideBar = (context)->
     #$("div.bar:not(:animated)",this).hide()
-    $("div.bar:not(:animated)").hide()
+    #$("div.bar:not(:animated)").hide()
     hideGraylayer ->
       #to wait hideKeywords effect wrong
-      #hideKeywords context,->
-      $("div.bar:not(:animated)",context).hide()
+      hideKeywords context,->
+        $("div.bar",context).hide()
   genShow = (indexes) ->
     @indexes = indexes
     ->
