@@ -29,25 +29,37 @@
   siteinfo = window.LDRize.getSiteinfo();
   paragraphs = $X siteinfo['paragraph']
   baseZindex = 1000
-  speed="fast"
+  speed="slow"
 
   showKeywords = (context) ->
-    $("div.keywords:not(:animated)", context)
-    .animate({"width":"show"},speed)
+    $("div.keywords", context)#.clearQueue()
+    .animate({"width":"show"},speed)#:not(:animated)
+    console.debug("showKeywords")
+    $("div.base").css("left":"0","right":"0","width":"")#console.log(
   hideKeywords = (context,callback) ->
     $("div.keywords", context)
-    .animate({"width":"hide"},speed,"swing",callback)
+    #.animate({"width":"hide"},speed,"swing",callback)#.apply())
+    .animate {"width":"hide"},speed,"swing",->
+      callback.apply() if callback? #(callback)
+      $("div.base").css("left":"","right":"","width":barWidth)#not to move to graylayer
+      #console.log("callbacked")
+    console.debug("hideKeywords")
   showBar = (context) ->
     #$("div.bar:not(:animated)",this).show()
     #console.log(context)
-    $("div.bar:not(:animated)",context).show()
+    console.debug("showBar")
+    #$("div.bar:not(:animated)",context).show()
+    $("div.bar",context).clearQueue().show()#:not(:animated).stop(true,true)
   showGraylayer = (callback)->
+    console.debug("showGray")
     $("#graylayer").fadeIn speed, callback
   hideGraylayer = (callback)->
+    console.debug("hideGray")
     $("#graylayer").stop(true,true).fadeOut speed, callback
   hideBar = (context)->
     #$("div.bar:not(:animated)",this).hide()
     #$("div.bar:not(:animated)").hide()
+    console.debug("hideBar")
     hideGraylayer ->
       #to wait hideKeywords effect wrong
       hideKeywords context,->
@@ -60,6 +72,7 @@
           $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
       #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
       showGraylayer()
+      #$("div.base").css("left":0,"right":0,"width":"")
       $(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
 
   genHide = (indexes) ->
@@ -81,7 +94,7 @@
     ####
     height = $(this).height()#attr("scrollHeight")
 
-    wrapdiv = $("<div>").css("z-index":baseZindex+2)#,"background-color":"red")
+    wrapdiv = $("<div>").css("position":"relative")#.css("z-index":1,"background-color":"red")#.css("z-index":baseZindex+2)
     $(this).wrap(wrapdiv)
     wrapdiv=$(this).parent()
     wrapdiv.hover ->
@@ -90,13 +103,18 @@
       hideBar($(this))
 
     base = $('<div>').attr("class","base")
-      .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth*2,"margin-left":-barWidth,"opacity":0.8,"float":"left")#.css("background-color":"red")#
+      .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth*2,"margin-left":-barWidth,"opacity":0.8,"float":"left").css("background-color":"red")#
     wrapdiv.prepend(base)
 
     bar = $('<div>').attr("class","bar")
       .css("background-color":"black","border-radius":8,"width":barWidth,"height":height,"float":"left")
+    base.append(bar)
+
     keywords = $('<div>').attr("class","keywords")
       .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":height,"width":100)
+    bar.append(keywords)
+    #base.append(keywords)
+
     ul=$("<ul>").css("padding":10)
     for obj in [["hoge",[1]],["fuga",[0,2]]]
       li=$('<a>').text(obj[0])
@@ -115,14 +133,14 @@
     ,->
       hideKeywords($(this).parent())
     keywords.prepend(ul)
-    bar.append(keywords)
+
     #base.hover ->
     #  $("div.bar:not(:animated)",this).show()
     #,->
     #  $("div.bar:not(:animated)",this).hide()
     #$(this).prepend(base)
     #$(this).prepend(base)
-    base.append(bar)
+
 
     $(this).css("z-index":baseZindex+1)
 
