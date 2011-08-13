@@ -18,7 +18,7 @@
   }, false);
   return h.appendChild(s1);
 })(document, function($) {
-  var $N, $X, barWidth, baseZindex, genHide, genShow, hideBar, hideGraylayer, hideKeywords, li, otherKeywords, paragraphs, showBar, showGraylayer, showKeywords, siteinfo, speed, ul;
+  var $N, $X, barWidth, baseZindex, genHide, genShow, hideBar, hideGraylayer, hideKeywords, li, otherKeywords, paragraphs, showBar, showGraylayer, showKeywords, showTooltip, siteinfo, speed, tooltip, ul;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -48,12 +48,10 @@
     });
   };
   showBar = function(context) {
-    console.debug("showBar");
     return $("div.bar", context).show();
   };
   hideBar = function(context) {
     var keywords;
-    console.debug("hideBar");
     keywords = $("div.keywords", context);
     if (keywords.is(":animated")) {
       return keywords.queue(function() {
@@ -64,18 +62,15 @@
     }
   };
   showGraylayer = function(callback) {
-    console.debug("showGray");
     return $("#graylayer").fadeIn(speed, callback);
   };
   hideGraylayer = function(callback) {
-    console.debug("hideGray");
     return $("#graylayer").stop(true, true).fadeOut(speed, callback);
   };
   genShow = function(indexes) {
     this.indexes = indexes;
     return function() {
       var index, _fn, _i, _len;
-      console.debug("genShow");
       _fn = function(index) {
         return $(paragraphs[index]).css({
           "z-index": baseZindex + 1
@@ -96,7 +91,6 @@
   genHide = function(indexes) {
     this.indexes = indexes;
     return function() {
-      console.debug("genHide");
       $(this).css({
         "z-index": baseZindex
       });
@@ -228,27 +222,30 @@
   ul.append(li);
   ul.wrap("<div>").parent().attr({
     "id": "tooltip"
+  }).css({
+    "position": "relative",
+    "z-index": "1010"
+  }).show().css({
+    "background-color": "red"
   });
-  $(otherKeywords[0]).append(ul.parent());
-  $(otherKeywords[0]).mouseover(function() {
-    return $("div.tooltip").fadeIn();
-  }).mouseout(function() {
-    return $("div.tooltip").fadeOut();
-  }).mousemove(function(e) {
-    return $("div.tooltip").css({
-      "top": e.pageY,
-      "left": e.pageX
-    });
+  $("body").append(ul.parent());
+  tooltip = $("div#tooltip");
+  showTooltip = function(e) {
+    tooltip.css({
+      "left": 0,
+      "top": 0,
+      "position": "absolute"
+    }).fadeIn().css({
+      "top": $(this).offset().top + 20,
+      "left": $(this).offset().left + 10
+    }).show();
+    return console.log($(this));
+  };
+  $(otherKeywords[0]).hover(showTooltip, function() {
+    return $("div#tooltip").fadeOut();
   });
-  $(otherKeywords[1]).mouseover(function() {
-    return $("div.tooltip").fadeIn();
-  }).mouseout(function() {
-    return $("div.tooltip").fadeOut();
-  }).mousemove(function(e) {
-    return $("div.tooltip").css({
-      "top": e.pageY,
-      "left": e.pageX
-    });
+  $(otherKeywords[1]).hover(showTooltip, function() {
+    return $("div#tooltip").fadeOut();
   });
   return window.flag = 1;
 });

@@ -42,7 +42,7 @@
     .animate {"width":"hide"},speed,"swing",->
       $("div.base").css("left":"","right":"","width":barWidth)#not to move to graylayer
   showBar = (context) ->
-    console.debug("showBar")
+    #console.debug("showBar")
     # keywords = $("div.keywords", context)
     # if keywords.is(":animated")
     #   keywords.queue ->
@@ -50,7 +50,7 @@
     # else
     $("div.bar",context).show()
   hideBar = (context)->
-    console.debug("hideBar")
+    #console.debug("hideBar")
     #hideGraylayer ->:animated
     keywords = $("div.keywords", context)
     if keywords.is(":animated")
@@ -59,16 +59,16 @@
     else
       $("div.bar",context).hide()
   showGraylayer = (callback)->
-    console.debug("showGray")
+    #console.debug("showGray")
     $("#graylayer").fadeIn speed, callback
   hideGraylayer = (callback)->
-    console.debug("hideGray")
+    #console.debug("hideGray")
     $("#graylayer").stop(true,true).fadeOut speed, callback
 
   genShow = (indexes) ->
     @indexes = indexes
     ->
-      console.debug("genShow")
+      #console.debug("genShow")
       for index in indexes
         do (index) ->
           $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
@@ -80,7 +80,7 @@
   genHide = (indexes) ->
     @indexes = indexes
     ->
-      console.debug("genHide")
+      #console.debug("genHide")
       $(this).css("z-index":baseZindex)#for other keyword
       hideGraylayer ->
         for index in indexes
@@ -137,22 +137,8 @@
       hideKeywords($(this).parent())
     keywords.prepend(ul)
 
-    #base.hover ->
-    #  $("div.bar:not(:animated)",this).show()
-    #,->
-    #  $("div.bar:not(:animated)",this).hide()
-    #$(this).prepend(base)
-    #$(this).prepend(base)
-
-
     $(this).css("z-index":baseZindex+1)
 
-    #$(this).mouseover ->
-      #showBar($(this).prev())
-    #  showBar($(this))
-    #$(this).mouseout ->
-      #hideBar($(this).prev())
-    #  hideBar($(this))
   ####
   # $X = window.Minibuffer.$X;
   # $N = window.Minibuffer.$N;
@@ -183,16 +169,19 @@
   ul.append(li)
   li=$('<a>').text("exclude").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
   ul.append(li)
-  ul.wrap("<div>").parent().attr("id":"tooltip")
-  $(otherKeywords[0]).append(ul.parent())
-  $(otherKeywords[0])
-    .mouseover(->$("div.tooltip").fadeIn())
-    .mouseout(->$("div.tooltip").fadeOut())
-    .mousemove( (e)->$("div.tooltip").css("top":e.pageY, "left":e.pageX))
-  $(otherKeywords[1])
-    .mouseover(->$("div.tooltip").fadeIn())
-    .mouseout(->$("div.tooltip").fadeOut())
-    .mousemove( (e)->$("div.tooltip").css("top":e.pageY, "left":e.pageX))
+
+  ul.wrap("<div>").parent().attr("id":"tooltip").css("position":"relative", "z-index":"1010").show().css("background-color":"red")#, "top":200, "left":100).hide()
+  $("body").append(ul.parent())
+  #console.log($("div#tooltip"))
+  tooltip = $("div#tooltip")
+  showTooltip = (e)->
+    tooltip.css("left":0, "top":0, "position":"absolute").fadeIn().css("top":$(this).offset().top + 20, "left":$(this).offset().left + 10).show()
+    #tooltip.prependTo(this)
+    console.log($(this))
+  $(otherKeywords[0]).hover showTooltip
+  , ->$("div#tooltip").fadeOut()
+  $(otherKeywords[1]).hover showTooltip
+  , ->$("div#tooltip").fadeOut()
   window.flag=1
 )
 # Local Variables:
