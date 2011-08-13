@@ -1,0 +1,54 @@
+## coffee -csb
+
+describe "Jasmine", ->
+  it "makes testing JavaScript awesome!", ->
+    expect(0).toBeEqual(0);
+
+#need plugin innercontext
+#jasmine.getEnv().addReporter(new jasmine.ConsoleReporter());
+jasmine.getEnv().execute()
+$ = jQuery
+assert=(value,expect)->
+  value = JSON.stringify(value)
+  expect = JSON.stringify(expect)
+  if (value!=expect)
+    console.error("expect:#{expect},but actual:#{value}")
+    throw "hoge"
+
+para=$("li.g").first()
+bar=$("div.bar").first()
+keywords=$("div.keywords",bar)
+
+para.mouseenter()
+assert(keywords.is(":animated"),false)
+assert(para.queue(),[])
+assert(bar.queue(),[])
+assert(keywords.queue(),[])
+assert(keywords.is(":visible"),false)
+bar.mouseenter()
+assert(keywords.is(":animated"),true)
+assert(keywords.queue(),["inprogress"])
+assert(keywords.is(":visible"),true)
+bar.mouseleave()
+#assert(keywords.is(":animated"),true)
+#assert(keywords.queue(),["inprogress"])
+#assert(keywords.is(":visible"),true)
+#bar.mouseenter()
+#assert(keywords.is(":animated"),true)
+#assert(keywords.queue(),["inprogress"])
+#assert(keywords.css("display"),"block")
+#bar.mouseleave()
+#assert(keywords.is(":animated"),true)
+
+
+#assert(keywords.queue(),["inprogress",null,null])
+#assert(keywords.css("display"),"none")
+#bar.mouseover()
+#assert(keywords.is(":animated"),true)
+#assert(keywords.queue(),["inprogress",null,null])
+#keywords.queue ->
+#  assert(keywords.css("display"),"none")
+
+# Local Variables:
+# mode: coffee
+# End:

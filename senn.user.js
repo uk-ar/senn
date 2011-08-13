@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           nearly search
+// @name           senn
 // @namespace      http://hoge
 // @include        https://*
 // @include        http://*
@@ -25,36 +25,43 @@
   siteinfo = window.LDRize.getSiteinfo();
   paragraphs = $X(siteinfo['paragraph']);
   baseZindex = 1000;
-  speed = "slow";
+  speed = "fast";
   showKeywords = function(context) {
-    $("div.keywords", context).animate({
+    $("div.keywords", context).stop(true, true).animate({
       "width": "show"
     }, speed);
-    console.debug("showKeywords");
     return $("div.base").css({
       "left": "0",
       "right": "0",
       "width": ""
     });
   };
-  hideKeywords = function(context, callback) {
-    $("div.keywords", context).animate({
+  hideKeywords = function(context) {
+    return $("div.keywords", context).animate({
       "width": "hide"
     }, speed, "swing", function() {
-      if (callback != null) {
-        callback.apply();
-      }
       return $("div.base").css({
         "left": "",
         "right": "",
         "width": barWidth
       });
     });
-    return console.debug("hideKeywords");
   };
   showBar = function(context) {
     console.debug("showBar");
-    return $("div.bar", context).clearQueue().show();
+    return $("div.bar", context).show();
+  };
+  hideBar = function(context) {
+    var keywords;
+    console.debug("hideBar");
+    keywords = $("div.keywords", context);
+    if (keywords.is(":animated")) {
+      return keywords.queue(function() {
+        return $("div.bar", context).hide();
+      });
+    } else {
+      return $("div.bar", context).hide();
+    }
   };
   showGraylayer = function(callback) {
     console.debug("showGray");
@@ -64,18 +71,11 @@
     console.debug("hideGray");
     return $("#graylayer").stop(true, true).fadeOut(speed, callback);
   };
-  hideBar = function(context) {
-    console.debug("hideBar");
-    return hideGraylayer(function() {
-      return hideKeywords(context, function() {
-        return $("div.bar", context).hide();
-      });
-    });
-  };
   genShow = function(indexes) {
     this.indexes = indexes;
     return function() {
       var index, _fn, _i, _len;
+      console.debug("genShow");
       _fn = function(index) {
         return $(paragraphs[index]).css({
           "z-index": baseZindex + 1
@@ -96,6 +96,7 @@
   genHide = function(indexes) {
     this.indexes = indexes;
     return function() {
+      console.debug("genHide");
       $(this).css({
         "z-index": baseZindex
       });
@@ -137,12 +138,10 @@
       "position": "absolute",
       "z-index": baseZindex + 3,
       "height": height,
-      "width": barWidth * 2,
+      "width": barWidth,
       "margin-left": -barWidth,
       "opacity": 0.8,
       "float": "left"
-    }).css({
-      "background-color": "red"
     });
     wrapdiv.prepend(base);
     bar = $('<div>').attr("class", "bar").css({

@@ -1,7 +1,7 @@
 ## coffee -csb
 `
 // ==UserScript==
-// @name           nearly search
+// @name           senn
 // @namespace      http://hoge
 // @include        https://*
 // @include        http://*
@@ -29,44 +29,46 @@
   siteinfo = window.LDRize.getSiteinfo();
   paragraphs = $X siteinfo['paragraph']
   baseZindex = 1000
-  speed="slow"
+  speed="fast"
 
   showKeywords = (context) ->
-    $("div.keywords", context)#.clearQueue()
+    $("div.keywords", context).stop(true, true)
     .animate({"width":"show"},speed)#:not(:animated)
-    console.debug("showKeywords")
+    #console.debug("showKeywords")
     $("div.base").css("left":"0","right":"0","width":"")#console.log(
-  hideKeywords = (context,callback) ->
+  hideKeywords = (context) ->
+    #console.debug("hideKeywords")
     $("div.keywords", context)
-    #.animate({"width":"hide"},speed,"swing",callback)#.apply())
     .animate {"width":"hide"},speed,"swing",->
-      callback.apply() if callback? #(callback)
       $("div.base").css("left":"","right":"","width":barWidth)#not to move to graylayer
-      #console.log("callbacked")
-    console.debug("hideKeywords")
   showBar = (context) ->
-    #$("div.bar:not(:animated)",this).show()
-    #console.log(context)
     console.debug("showBar")
-    #$("div.bar:not(:animated)",context).show()
-    $("div.bar",context).clearQueue().show()#:not(:animated).stop(true,true)
+    # keywords = $("div.keywords", context)
+    # if keywords.is(":animated")
+    #   keywords.queue ->
+    #     $("div.bar",context).show()
+    # else
+    $("div.bar",context).show()
+  hideBar = (context)->
+    console.debug("hideBar")
+    #hideGraylayer ->:animated
+    keywords = $("div.keywords", context)
+    if keywords.is(":animated")
+      keywords.queue ->
+        $("div.bar",context).hide()
+    else
+      $("div.bar",context).hide()
   showGraylayer = (callback)->
     console.debug("showGray")
     $("#graylayer").fadeIn speed, callback
   hideGraylayer = (callback)->
     console.debug("hideGray")
     $("#graylayer").stop(true,true).fadeOut speed, callback
-  hideBar = (context)->
-    #$("div.bar:not(:animated)",this).hide()
-    #$("div.bar:not(:animated)").hide()
-    console.debug("hideBar")
-    hideGraylayer ->
-      #to wait hideKeywords effect wrong
-      hideKeywords context,->
-        $("div.bar",context).hide()
+
   genShow = (indexes) ->
     @indexes = indexes
     ->
+      console.debug("genShow")
       for index in indexes
         do (index) ->
           $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
@@ -78,6 +80,7 @@
   genHide = (indexes) ->
     @indexes = indexes
     ->
+      console.debug("genHide")
       $(this).css("z-index":baseZindex)#for other keyword
       hideGraylayer ->
         for index in indexes
@@ -103,7 +106,7 @@
       hideBar($(this))
 
     base = $('<div>').attr("class","base")
-      .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth*2,"margin-left":-barWidth,"opacity":0.8,"float":"left").css("background-color":"red")#
+      .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth,"margin-left":-barWidth,"opacity":0.8,"float":"left")#.css("background-color":"red")#
     wrapdiv.prepend(base)
 
     bar = $('<div>').attr("class","bar")
