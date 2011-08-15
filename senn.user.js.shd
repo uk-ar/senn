@@ -30,6 +30,9 @@
   paragraphs = $X siteinfo['paragraph']
   baseZindex = 1000
   speed="fast"
+  wordsIndex ={"hoge":[0,1],"fuga":[2]}
+
+  #wordsIndex["hoge"]
 
   showKeywords = (context) ->
     $("div.keywords", context).stop(true, true)
@@ -59,28 +62,30 @@
     else
       $("div.bar",context).hide()
   showGraylayer = (callback)->
-    #console.debug("showGray")
-    $("#graylayer").fadeIn speed, callback
+    console.debug("showGray")
+    $("#graylayer").stop(true,true).fadeIn speed, callback
   hideGraylayer = (callback)->
-    #console.debug("hideGray")
+    console.debug("hideGray")
     $("#graylayer").stop(true,true).fadeOut speed, callback
 
   genShow = (indexes) ->
     @indexes = indexes
     ->
-      #console.debug("genShow")
+      console.debug("genShow")
+      console.debug(this)
       for index in indexes
         do (index) ->
           $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
       #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
+      console.log($(this))
       showGraylayer()
       #$("div.base").css("left":0,"right":0,"width":"")
-      $(this).css("z-index":baseZindex+1)#,"position":"relative")#for other keyword
+      $(this).css("z-index":baseZindex+5)#,"position":"relative")#for other keyword
 
   genHide = (indexes) ->
     @indexes = indexes
     ->
-      #console.debug("genHide")
+      console.debug("genHide")
       $(this).css("z-index":baseZindex)#for other keyword
       hideGraylayer ->
         for index in indexes
@@ -146,8 +151,7 @@
 
   # siteinfo = window.LDRize.getSiteinfo();
   # paragraphs = $X siteinfo['paragraph']
-
-  baseZindex = 1000
+  # baseZindex = 1000
   $("#graylayer").remove()
   ####
   # position fixed because scroll
@@ -164,24 +168,48 @@
   ####
   $("#tooltip").remove()
   ####
-  ul=$("<ul>").css("padding":10)
-  li=$('<a>').text("include").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
+  ul=$("<ul>").css("padding":10, "background-color":"blue","border-radius":3, "list-style-type":"none")
+  li=$('<a>').text("include").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
   ul.append(li)
-  li=$('<a>').text("exclude").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
+  li=$('<a>').text("exclude").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
   ul.append(li)
 
-  ul.wrap("<div>").parent().attr("id":"tooltip").css("position":"relative", "z-index":"1010").show().css("background-color":"red")#, "top":200, "left":100).hide()
+  ul.wrap("<div>").parent().attr("id":"tooltip").css("position":"relative", "z-index":"1010").show()#.css("background-color":"red")#, "top":200, "left":100).hide()
   $("body").append(ul.parent())
   #console.log($("div#tooltip"))
   tooltip = $("div#tooltip")
   showTooltip = (e)->
-    tooltip.css("left":0, "top":0, "position":"absolute").fadeIn().css("top":$(this).offset().top + 20, "left":$(this).offset().left + 10).show()
-    #tooltip.prependTo(this)
-    console.log($(this))
-  $(otherKeywords[0]).hover showTooltip
-  , ->$("div#tooltip").fadeOut()
-  $(otherKeywords[1]).hover showTooltip
-  , ->$("div#tooltip").fadeOut()
+    console.debug("showTooltip")
+    graylayer = $("#graylayer")
+    #if graylayer.is(":animated")
+    that = this
+    graylayer.queue -># => cannot works well
+      console.debug("act1:showTooltip")
+      console.debug(that)
+      tooltip.stop(true,true).css("left":$(that).width(), "top":0, "position":"absolute", "padding-left":10).slideDown(speed)
+      tooltip.appendTo(that)
+      #.css("top":$(this).offset().top + 20, "left":$(this).offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":$(this).width(), "top":$(this).height()
+    # else
+    #   console.debug("act2:showTooltip")
+    #   tooltip.stop(true,true).css("left":$(this).width(), "top":0, "position":"absolute", "padding-left":10).fadeIn()#.css("top":$(this).offset().top + 20, "left":$(this).offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":$(this).width(), "top":$(this).height()
+    #   tooltip.appendTo(this)
+    #console.log($(this))
+  hideTooltip = (e)->
+    console.debug("hideTooltip")
+    $("div#tooltip").stop(true,true).slideUp(speed)
+
+  $("a", $("div.keywords").first()).first().css("position":"relative").hover showTooltip
+  , hideTooltip
+  $("a:eq(1)", $("div.keywords").first()).css("position":"relative").hover showTooltip
+  , hideTooltip
+
+  $(otherKeywords[0]).css("position":"relative").hover showTooltip
+  , hideTooltip
+  $(otherKeywords[1]).css("position":"relative").hover showTooltip
+  , hideTooltip
+  #$("a:eq(1)", $("div.keywords").first()).mouseenter()
+
+  ####
   window.flag=1
 )
 # Local Variables:

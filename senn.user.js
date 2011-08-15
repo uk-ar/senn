@@ -18,7 +18,7 @@
   }, false);
   return h.appendChild(s1);
 })(document, function($) {
-  var $N, $X, barWidth, baseZindex, genHide, genShow, hideBar, hideGraylayer, hideKeywords, li, otherKeywords, paragraphs, showBar, showGraylayer, showKeywords, showTooltip, siteinfo, speed, tooltip, ul;
+  var $N, $X, barWidth, baseZindex, genHide, genShow, hideBar, hideGraylayer, hideKeywords, hideTooltip, li, otherKeywords, paragraphs, showBar, showGraylayer, showKeywords, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -26,6 +26,10 @@
   paragraphs = $X(siteinfo['paragraph']);
   baseZindex = 1000;
   speed = "fast";
+  wordsIndex = {
+    "hoge": [0, 1],
+    "fuga": [2]
+  };
   showKeywords = function(context) {
     $("div.keywords", context).stop(true, true).animate({
       "width": "show"
@@ -62,15 +66,19 @@
     }
   };
   showGraylayer = function(callback) {
-    return $("#graylayer").fadeIn(speed, callback);
+    console.debug("showGray");
+    return $("#graylayer").stop(true, true).fadeIn(speed, callback);
   };
   hideGraylayer = function(callback) {
+    console.debug("hideGray");
     return $("#graylayer").stop(true, true).fadeOut(speed, callback);
   };
   genShow = function(indexes) {
     this.indexes = indexes;
     return function() {
       var index, _fn, _i, _len;
+      console.debug("genShow");
+      console.debug(this);
       _fn = function(index) {
         return $(paragraphs[index]).css({
           "z-index": baseZindex + 1
@@ -82,15 +90,17 @@
         index = indexes[_i];
         _fn(index);
       }
+      console.log($(this));
       showGraylayer();
       return $(this).css({
-        "z-index": baseZindex + 1
+        "z-index": baseZindex + 5
       });
     };
   };
   genHide = function(indexes) {
     this.indexes = indexes;
     return function() {
+      console.debug("genHide");
       $(this).css({
         "z-index": baseZindex
       });
@@ -180,7 +190,6 @@
       "z-index": baseZindex + 1
     });
   });
-  baseZindex = 1000;
   $("#graylayer").remove();
   $("body").append($("<div>").attr({
     "id": "graylayer"
@@ -210,14 +219,21 @@
   $(otherKeywords[1]).hover(genShow([1]), genHide([1]));
   $("#tooltip").remove();
   ul = $("<ul>").css({
-    "padding": 10
+    "padding": 10,
+    "background-color": "blue",
+    "border-radius": 3,
+    "list-style-type": "none"
   });
   li = $('<a>').text("include").attr({
     "href": "http://www.google.co.jp/"
+  }).css({
+    "color": "white"
   }).wrap("<li>").parent();
   ul.append(li);
   li = $('<a>').text("exclude").attr({
     "href": "http://www.google.co.jp/"
+  }).css({
+    "color": "white"
   }).wrap("<li>").parent();
   ul.append(li);
   ul.wrap("<div>").parent().attr({
@@ -225,27 +241,41 @@
   }).css({
     "position": "relative",
     "z-index": "1010"
-  }).show().css({
-    "background-color": "red"
-  });
+  }).show();
   $("body").append(ul.parent());
   tooltip = $("div#tooltip");
   showTooltip = function(e) {
-    tooltip.css({
-      "left": 0,
-      "top": 0,
-      "position": "absolute"
-    }).fadeIn().css({
-      "top": $(this).offset().top + 20,
-      "left": $(this).offset().left + 10
-    }).show();
-    return console.log($(this));
+    var graylayer, that;
+    console.debug("showTooltip");
+    graylayer = $("#graylayer");
+    that = this;
+    return graylayer.queue(function() {
+      console.debug("act1:showTooltip");
+      console.debug(that);
+      tooltip.stop(true, true).css({
+        "left": $(that).width(),
+        "top": 0,
+        "position": "absolute",
+        "padding-left": 10
+      }).slideDown(speed);
+      return tooltip.appendTo(that);
+    });
   };
-  $(otherKeywords[0]).hover(showTooltip, function() {
-    return $("div#tooltip").fadeOut();
-  });
-  $(otherKeywords[1]).hover(showTooltip, function() {
-    return $("div#tooltip").fadeOut();
-  });
+  hideTooltip = function(e) {
+    console.debug("hideTooltip");
+    return $("div#tooltip").stop(true, true).slideUp(speed);
+  };
+  $("a", $("div.keywords").first()).first().css({
+    "position": "relative"
+  }).hover(showTooltip, hideTooltip);
+  $("a:eq(1)", $("div.keywords").first()).css({
+    "position": "relative"
+  }).hover(showTooltip, hideTooltip);
+  $(otherKeywords[0]).css({
+    "position": "relative"
+  }).hover(showTooltip, hideTooltip);
+  $(otherKeywords[1]).css({
+    "position": "relative"
+  }).hover(showTooltip, hideTooltip);
   return window.flag = 1;
 });
