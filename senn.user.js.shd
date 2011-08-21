@@ -30,7 +30,7 @@
   paragraphs = $X siteinfo['paragraph']
   baseZindex = 1000
   speed="fast"
-  wordsIndex ={"hoge":[0,1],"fuga":[2]}
+  wordsIndex ={"ruby on rails":[0,2],"ruby 入門":[1]}
 
   #wordsIndex["hoge"]
 
@@ -62,22 +62,24 @@
     else
       $("div.bar",context).hide()
   showGraylayer = (callback)->
-    console.debug("showGray")
+    console.warn("showGray")
     $("#graylayer").stop(true,true).fadeIn speed, callback
   hideGraylayer = (callback)->
-    console.debug("hideGray")
+    console.warn("hideGray")
     $("#graylayer").stop(true,true).fadeOut speed, callback
 
   genShow = (indexes) ->
     @indexes = indexes
     ->
       console.debug("genShow")
-      console.debug(this)
+      index2 = wordsIndex[$(this).text()]
+      console.info(index2)
       for index in indexes
         do (index) ->
+          console.info(index)
           $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
       #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
-      console.log($(this))
+      console.info($(this))
       showGraylayer()
       #$("div.base").css("left":0,"right":0,"width":"")
       $(this).css("z-index":baseZindex+5)#,"position":"relative")#for other keyword
@@ -86,11 +88,40 @@
     @indexes = indexes
     ->
       console.debug("genHide")
+      index2 = wordsIndex[$(this).text()]
+      console.info(index2)
       $(this).css("z-index":baseZindex)#for other keyword
       hideGraylayer ->
         for index in indexes
           do (index) ->
             $(paragraphs[index]).css("z-index":baseZindex)#.css("background-color":"")
+
+  showParagraphs = (word) ->
+    console.group("showP")
+    #console.warn(word)
+    index2 = wordsIndex[word]#$.text() combied children
+    console.warn(index2)
+    for index in index2
+      do (index) ->
+        console.warn("sh" + index)
+        $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")
+    showGraylayer()
+    console.groupEnd("showP")
+      #$(e.target).css("z-index":baseZindex+5)#for other keyword
+  hideParagraphs = (word) ->
+    console.group("hideP")
+    #console.warn(word)
+    index2 = wordsIndex[word]#$.text() combied children
+    console.warn(index2)
+    #$(e.target).css("z-index":baseZindex)#for other keyword
+    hideGraylayer  ->
+      for index in index2
+        do (index) ->
+          console.warn("hi" + index)
+          $(paragraphs[index]).css("z-index":baseZindex)
+    console.groupEnd("hideP")
+    #.css("background-color":"")
+
   ####
   $("div.bar").remove()
   $("div.base").remove()
@@ -98,51 +129,77 @@
   barWidth=30
   $(paragraphs).each ->
     ####
-    $(this).unwrap() if window.flag?
+    paragraph = $(this)
+    paragraph.unwrap() if window.flag?
     ####
-    height = $(this).height()#attr("scrollHeight")
+    height = paragraph.height()#attr("scrollHeight")
 
-    wrapdiv = $("<div>").css("position":"relative")#.css("z-index":1,"background-color":"red")#.css("z-index":baseZindex+2)
-    $(this).wrap(wrapdiv)
-    wrapdiv=$(this).parent()
-    wrapdiv.hover ->
-      showBar($(this))
-    ,->
-      hideBar($(this))
+    wrapdiv = $("<div>").css("position":"relative")#.css("background-color":"red")#.css("z-index":1,#.css("z-index":baseZindex+2)
+    paragraph.wrap(wrapdiv)
+    wrapdiv=paragraph.parent()
+    # wrapdiv.hover ->
+    #   showBar(paragraph)
+    # ,->
+    #   hideBar(paragraph)
 
     base = $('<div>').attr("class","base")
-      .css("position":"absolute","z-index":baseZindex+3,"height":height,"width":barWidth,"margin-left":-barWidth,"opacity":0.8,"float":"left")#.css("background-color":"red")#
+      .css("position":"absolute","z-index":baseZindex+3,"height":height,"margin-left":-barWidth,"opacity":0.8).css("background-color":"red")
     wrapdiv.prepend(base)
 
     bar = $('<div>').attr("class","bar")
-      .css("background-color":"black","border-radius":8,"width":barWidth,"height":height,"float":"left")
+      .css("width":barWidth,"height":height)
     base.append(bar)
 
+    check = $('<input>').attr("type":"checkbox", "position":"absolute")
+    bar.append(check)
+
+    select = $('<div>').attr("class","select").text("この文書を")
+      .css("height":height)
+    ul=$("<ul>").css("padding":10, "border-radius":3, "list-style-type":"none")#"background-color":"blue",
+    li=$('<a>').text("含む").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
+  #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
+    check = $('<input>').attr("type":"checkbox", "position":"absolute")
+    li.prepend(check)
+    ul.append(li)
+
+    li=$('<a>').text("除外する").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
+    check = $('<input>').attr("type":"checkbox", "position":"absolute")
+    li.prepend(check)
+    ul.append(li)
+
+    select.append(ul)
+    base.append(select)
+
     keywords = $('<div>').attr("class","keywords")
-      .css("background-color":"black","position":"absolute","border-radius":8,"left":barWidth,"height":height,"width":100)
-    bar.append(keywords)
-    #base.append(keywords)
+      .css("background-color":"black","border-radius":8,"top":0, "left":barWidth,"height":height,"width":200,"float":"left")#"position":"absolute",
+
+    #bar.append(keywords)
+    base.append(keywords)
 
     ul=$("<ul>").css("padding":10)
-    for obj in [["hoge",[1]],["fuga",[0,2]]]
-      li=$('<a>').text(obj[0])
-        .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(obj[1]),genHide(obj[1])).parent()
-      ul.append(li)
+    #for word in ["ruby on rails","ruby 入門"]
+    for word in ["W3C","タグ", "ルビ"]
+      a=$('<a>').text(word)
+        .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
+      # a.hover ->showParagraphs(a),
+      # -> hideParagraphs(a)
+      ul.append(a.parent())
     #base.hover ->
       #$("div.bar:not(:animated)",this).show()
       #showBar(this)
     #,->
       #$("div.bar:not(:animated)",this).hide()
       #hideBar(this)
+    select.hide()
     bar.hide()
     keywords.hide()
-    bar.hover ->
-      showKeywords($(this).parent())
-    ,->
-      hideKeywords($(this).parent())
+    # bar.hover ->
+    #   showKeywords(paragraph.parent())
+    # ,->
+    #   hideKeywords(paragraph.parent())
     keywords.prepend(ul)
 
-    $(this).css("z-index":baseZindex+1)
+    paragraph.css("z-index":baseZindex+1)
 
   ####
   # $X = window.Minibuffer.$X;
@@ -159,20 +216,36 @@
     $("<div>").attr("id":"graylayer")
     .css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
   # position relative because z-index
-  $(paragraphs)
-    .css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
+  $(paragraphs).css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
 
-  otherKeywords=$('#trev a').css("position":"relative","border-radius":3,"background-color":"white").each ->
+  otherKeywords=$('#trev a').css("position":"relative","border-radius":3,"background-color":"white")
   $(otherKeywords[0]).hover genShow([0, 3]), genHide([0, 3])
   $(otherKeywords[1]).hover genShow([1]), genHide([1])
   ####
   $("#tooltip").remove()
   ####
   ul=$("<ul>").css("padding":10, "background-color":"blue","border-radius":3, "list-style-type":"none")
-  li=$('<a>').text("include").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
+  li=$('<a>').text("include").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>").parent()
+  #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
   ul.append(li)
-  li=$('<a>').text("exclude").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>").parent()#.hover(genShow(obj[1]),genHide(obj[1]))
-  ul.append(li)
+  a=$('<a>').text("exclude").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>")
+  .hover (e) ->
+    link = $(e.target).parents("a").first()
+    word = link[0].firstChild.data
+    hideParagraphs(word)
+    $("#graylayer").stop(true,true)
+    showParagraphs(word)
+    console.error("show")
+  , ->
+    # link = $(e.target).parents("a").first()
+    # word = link[0].firstChild.data
+    # hideParagraphs(word)
+    # $("#graylayer").stop(true,true)
+    # showParagraphs(word)
+    console.error("hide")
+    #showParagraphs(
+   #.hover(genShow(obj[1]),genHide(obj[1]))
+  ul.append(a.parent())
 
   ul.wrap("<div>").parent().attr("id":"tooltip").css("position":"relative", "z-index":"1010").show()#.css("background-color":"red")#, "top":200, "left":100).hide()
   $("body").append(ul.parent())
@@ -188,12 +261,12 @@
       console.debug(that)
       tooltip.stop(true,true).css("left":$(that).width(), "top":0, "position":"absolute", "padding-left":10).slideDown(speed)
       tooltip.appendTo(that)
-      #.css("top":$(this).offset().top + 20, "left":$(this).offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":$(this).width(), "top":$(this).height()
+      #.css("top":paragraph.offset().top + 20, "left":paragraph.offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":paragraph.width(), "top":paragraph.height()
     # else
     #   console.debug("act2:showTooltip")
-    #   tooltip.stop(true,true).css("left":$(this).width(), "top":0, "position":"absolute", "padding-left":10).fadeIn()#.css("top":$(this).offset().top + 20, "left":$(this).offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":$(this).width(), "top":$(this).height()
+    #   tooltip.stop(true,true).css("left":paragraph.width(), "top":0, "position":"absolute", "padding-left":10).fadeIn()#.css("top":paragraph.offset().top + 20, "left":paragraph.offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":paragraph.width(), "top":paragraph.height()
     #   tooltip.appendTo(this)
-    #console.log($(this))
+    #console.log(paragraph)
   hideTooltip = (e)->
     console.debug("hideTooltip")
     $("div#tooltip").stop(true,true).slideUp(speed)
@@ -208,10 +281,26 @@
   $(otherKeywords[1]).css("position":"relative").hover showTooltip
   , hideTooltip
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
-
+  $(paragraphs[0]).mouseenter()
+  $("div.bar:eq(0)").show()
+  $("div.select:eq(0)").show()
+  $("div.keywords:eq(0)").show()
   ####
   window.flag=1
 )
+#if (top==window)
+# GM_addStyle [".select {background: gray; color: white; cursor: pointer; padding: 0.2em;}"].join('')
+GM_addStyle('''
+div.base div {
+  background-color: black;
+  border-radius: 8px 8px 8px 8px;
+  color: white;
+  float: left;
+}
+''')
+
+#bug strange overlay keyword suggest
+
 # Local Variables:
 # mode: coffee
 # End:

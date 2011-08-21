@@ -18,7 +18,7 @@
   }, false);
   return h.appendChild(s1);
 })(document, function($) {
-  var $N, $X, barWidth, baseZindex, genHide, genShow, hideBar, hideGraylayer, hideKeywords, hideTooltip, li, otherKeywords, paragraphs, showBar, showGraylayer, showKeywords, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex;
+  var $N, $X, a, barWidth, baseZindex, genHide, genShow, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, li, otherKeywords, paragraphs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -27,8 +27,8 @@
   baseZindex = 1000;
   speed = "fast";
   wordsIndex = {
-    "hoge": [0, 1],
-    "fuga": [2]
+    "ruby on rails": [0, 2],
+    "ruby 入門": [1]
   };
   showKeywords = function(context) {
     $("div.keywords", context).stop(true, true).animate({
@@ -66,20 +66,22 @@
     }
   };
   showGraylayer = function(callback) {
-    console.debug("showGray");
+    console.warn("showGray");
     return $("#graylayer").stop(true, true).fadeIn(speed, callback);
   };
   hideGraylayer = function(callback) {
-    console.debug("hideGray");
+    console.warn("hideGray");
     return $("#graylayer").stop(true, true).fadeOut(speed, callback);
   };
   genShow = function(indexes) {
     this.indexes = indexes;
     return function() {
-      var index, _fn, _i, _len;
+      var index, index2, _fn, _i, _len;
       console.debug("genShow");
-      console.debug(this);
+      index2 = wordsIndex[$(this).text()];
+      console.info(index2);
       _fn = function(index) {
+        console.info(index);
         return $(paragraphs[index]).css({
           "z-index": baseZindex + 1
         }).css({
@@ -90,7 +92,7 @@
         index = indexes[_i];
         _fn(index);
       }
-      console.log($(this));
+      console.info($(this));
       showGraylayer();
       return $(this).css({
         "z-index": baseZindex + 5
@@ -100,7 +102,10 @@
   genHide = function(indexes) {
     this.indexes = indexes;
     return function() {
+      var index2;
       console.debug("genHide");
+      index2 = wordsIndex[$(this).text()];
+      console.info(index2);
       $(this).css({
         "z-index": baseZindex
       });
@@ -119,74 +124,144 @@
       });
     };
   };
+  showParagraphs = function(word) {
+    var index, index2, _fn, _i, _len;
+    console.group("showP");
+    index2 = wordsIndex[word];
+    console.warn(index2);
+    _fn = function(index) {
+      console.warn("sh" + index);
+      return $(paragraphs[index]).css({
+        "z-index": baseZindex + 1
+      }).css({
+        "background-color": "white"
+      });
+    };
+    for (_i = 0, _len = index2.length; _i < _len; _i++) {
+      index = index2[_i];
+      _fn(index);
+    }
+    showGraylayer();
+    return console.groupEnd("showP");
+  };
+  hideParagraphs = function(word) {
+    var index2;
+    console.group("hideP");
+    index2 = wordsIndex[word];
+    console.warn(index2);
+    hideGraylayer(function() {
+      var index, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = index2.length; _i < _len; _i++) {
+        index = index2[_i];
+        _results.push((function(index) {
+          console.warn("hi" + index);
+          return $(paragraphs[index]).css({
+            "z-index": baseZindex
+          });
+        })(index));
+      }
+      return _results;
+    });
+    return console.groupEnd("hideP");
+  };
   $("div.bar").remove();
   $("div.base").remove();
   barWidth = 30;
   $(paragraphs).each(function() {
-    var bar, base, height, keywords, li, obj, ul, wrapdiv, _i, _len, _ref;
+    var a, bar, base, check, height, keywords, li, paragraph, select, ul, word, wrapdiv, _i, _len, _ref;
+    paragraph = $(this);
     if (window.flag != null) {
-      $(this).unwrap();
+      paragraph.unwrap();
     }
-    height = $(this).height();
+    height = paragraph.height();
     wrapdiv = $("<div>").css({
       "position": "relative"
     });
-    $(this).wrap(wrapdiv);
-    wrapdiv = $(this).parent();
-    wrapdiv.hover(function() {
-      return showBar($(this));
-    }, function() {
-      return hideBar($(this));
-    });
+    paragraph.wrap(wrapdiv);
+    wrapdiv = paragraph.parent();
     base = $('<div>').attr("class", "base").css({
       "position": "absolute",
       "z-index": baseZindex + 3,
       "height": height,
-      "width": barWidth,
       "margin-left": -barWidth,
-      "opacity": 0.8,
-      "float": "left"
+      "opacity": 0.8
+    }).css({
+      "background-color": "red"
     });
     wrapdiv.prepend(base);
     bar = $('<div>').attr("class", "bar").css({
-      "background-color": "black",
-      "border-radius": 8,
       "width": barWidth,
-      "height": height,
-      "float": "left"
+      "height": height
     });
     base.append(bar);
+    check = $('<input>').attr({
+      "type": "checkbox",
+      "position": "absolute"
+    });
+    bar.append(check);
+    select = $('<div>').attr("class", "select").text("この文書を").css({
+      "height": height
+    });
+    ul = $("<ul>").css({
+      "padding": 10,
+      "border-radius": 3,
+      "list-style-type": "none"
+    });
+    li = $('<a>').text("含む").attr({
+      "href": "http://www.google.co.jp/"
+    }).css({
+      "color": "white",
+      "float": "right"
+    }).wrap("<li>").parent();
+    check = $('<input>').attr({
+      "type": "checkbox",
+      "position": "absolute"
+    });
+    li.prepend(check);
+    ul.append(li);
+    li = $('<a>').text("除外する").attr({
+      "href": "http://www.google.co.jp/"
+    }).css({
+      "color": "white",
+      "float": "right"
+    }).wrap("<li>").parent();
+    check = $('<input>').attr({
+      "type": "checkbox",
+      "position": "absolute"
+    });
+    li.prepend(check);
+    ul.append(li);
+    select.append(ul);
+    base.append(select);
     keywords = $('<div>').attr("class", "keywords").css({
       "background-color": "black",
-      "position": "absolute",
       "border-radius": 8,
+      "top": 0,
       "left": barWidth,
       "height": height,
-      "width": 100
+      "width": 200,
+      "float": "left"
     });
-    bar.append(keywords);
+    base.append(keywords);
     ul = $("<ul>").css({
       "padding": 10
     });
-    _ref = [["hoge", [1]], ["fuga", [0, 2]]];
+    _ref = ["W3C", "タグ", "ルビ"];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      obj = _ref[_i];
-      li = $('<a>').text(obj[0]).css({
+      word = _ref[_i];
+      a = $('<a>').text(word).css({
         "color": "white"
       }).attr({
         "href": "http://www.google.co.jp/"
-      }).wrap("<li>").hover(genShow(obj[1]), genHide(obj[1])).parent();
-      ul.append(li);
+      }).wrap("<li>").hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]));
+      ul.append(a.parent());
     }
+    select.hide();
     bar.hide();
     keywords.hide();
-    bar.hover(function() {
-      return showKeywords($(this).parent());
-    }, function() {
-      return hideKeywords($(this).parent());
-    });
     keywords.prepend(ul);
-    return $(this).css({
+    return paragraph.css({
       "z-index": baseZindex + 1
     });
   });
@@ -214,7 +289,7 @@
     "position": "relative",
     "border-radius": 3,
     "background-color": "white"
-  }).each(function() {});
+  });
   $(otherKeywords[0]).hover(genShow([0, 3]), genHide([0, 3]));
   $(otherKeywords[1]).hover(genShow([1]), genHide([1]));
   $("#tooltip").remove();
@@ -230,12 +305,22 @@
     "color": "white"
   }).wrap("<li>").parent();
   ul.append(li);
-  li = $('<a>').text("exclude").attr({
+  a = $('<a>').text("exclude").attr({
     "href": "http://www.google.co.jp/"
   }).css({
     "color": "white"
-  }).wrap("<li>").parent();
-  ul.append(li);
+  }).wrap("<li>").hover(function(e) {
+    var link, word;
+    link = $(e.target).parents("a").first();
+    word = link[0].firstChild.data;
+    hideParagraphs(word);
+    $("#graylayer").stop(true, true);
+    showParagraphs(word);
+    return console.error("show");
+  }, function() {
+    return console.error("hide");
+  });
+  ul.append(a.parent());
   ul.wrap("<div>").parent().attr({
     "id": "tooltip"
   }).css({
@@ -277,5 +362,10 @@
   $(otherKeywords[1]).css({
     "position": "relative"
   }).hover(showTooltip, hideTooltip);
+  $(paragraphs[0]).mouseenter();
+  $("div.bar:eq(0)").show();
+  $("div.select:eq(0)").show();
+  $("div.keywords:eq(0)").show();
   return window.flag = 1;
 });
+GM_addStyle('div.base div {\n  background-color: black;\n  border-radius: 8px 8px 8px 8px;\n  color: white;\n  float: left;\n}');
