@@ -1,3 +1,4 @@
+
 // ==UserScript==
 // @name           senn
 // @namespace      http://hoge
@@ -5,20 +6,30 @@
 // @include        http://*
 // @include        http://*
 // ==/UserScript==
-;(function(d, func) {
-  var h, s1;
-  h = d.getElementsByTagName('head')[0];
-  s1 = d.createElement("script");
-  s1.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js");
-  s1.addEventListener('load', function() {
-    var s2;
-    s2 = d.createElement("script");
-    s2.textContent = "jQuery.noConflict();(" + func.toString() + ")(jQuery);";
-    return h.appendChild(s2);
-  }, false);
-  return h.appendChild(s1);
-})(document, function($) {
-  var $N, $X, a, barWidth, baseZindex, genHide, genShow, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, li, otherKeywords, paragraphs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex;
+;var GM_wait, jQuery, letsJQuery;
+jQuery = 0;
+GM_wait = function() {
+  if (typeof unsafeWindow.jQuery === 'undefined') {
+    return window.setTimeout(GM_wait, 100);
+  } else {
+    jQuery = unsafeWindow.jQuery.noConflict(true);
+    return letsJQuery();
+  }
+};
+(function() {
+  var GM_Head, GM_JQ;
+  if (typeof unsafeWindow.jQuery === 'undefined') {
+    GM_Head = document.getElementsByTagName('head')[0] || document.documentElement;
+    GM_JQ = document.createElement('script');
+    GM_JQ.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js';
+    GM_JQ.type = 'text/javascript';
+    GM_JQ.async = true;
+    GM_Head.insertBefore(GM_JQ, GM_Head.firstChild);
+  }
+  return GM_wait();
+})();
+letsJQuery = function() {
+  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, li, otherKeywords, paragraphs, post_data, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -195,8 +206,7 @@
       "height": height
     });
     base.append(bar);
-    check = $('<input>').attr({
-      "type": "checkbox",
+    check = $('<input type="checkbox"/>').attr({
       "position": "absolute"
     });
     bar.append(check);
@@ -214,8 +224,7 @@
       "color": "white",
       "float": "right"
     }).wrap("<li>").parent();
-    check = $('<input>').attr({
-      "type": "checkbox",
+    check = $('<input type="checkbox"/>').attr({
       "position": "absolute"
     });
     li.prepend(check);
@@ -226,8 +235,7 @@
       "color": "white",
       "float": "right"
     }).wrap("<li>").parent();
-    check = $('<input>').attr({
-      "type": "checkbox",
+    check = $('<input type="checkbox"/>').attr({
       "position": "absolute"
     });
     li.prepend(check);
@@ -366,6 +374,35 @@
   $("div.bar:eq(0)").show();
   $("div.select:eq(0)").show();
   $("div.keywords:eq(0)").show();
+  D = window.Minibuffer.D();
+  api_url = "http://localhost:3000/api";
+  D.xhttp.post_j = function(url, data) {
+    return D.xhttp({
+      method: "post",
+      url: url,
+      data: data,
+      headers: {
+        "Content-Type": "application/json; charset = utf-8"
+      }
+    });
+  };
+  get_url = function(node) {
+    var _ref;
+    return (_ref = $X(siteinfo['link'], node)) != null ? _ref[0].href : void 0;
+  };
+  post_data = JSON.stringify({
+    all_urls: $X(siteinfo['paragraph']).map(get_url)
+  });
+  window.Minibuffer.status('Preload2', 'Preloading2...');
+  D.xhttp.post_j(api_url + "/preload2", post_data).next(function(response) {
+    var ret;
+    ret = JSON.parse(response.responseText);
+    console.log(ret);
+    console.log("post f");
+    console.log(ret.status);
+    window.Minibuffer.status('Preload2', 'Preloading2... ' + ret.status(+'.', 300));
+    return true;
+  });
   return window.flag = 1;
-});
+};
 GM_addStyle('div.base div {\n  background-color: black;\n  border-radius: 8px 8px 8px 8px;\n  color: white;\n  float: left;\n}');

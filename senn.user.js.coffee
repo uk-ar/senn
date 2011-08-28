@@ -11,21 +11,72 @@
 # // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
 #f = (x) -> x + 4
 #http://www.otchy.net/20091104/use-jquery-on-greasemonkey/
+# @resource
+# http://d.hatena.ne.jp/shogo4405/20110529/1306651136
+#((d, func) ->
+  # error
+  # when gm_XmlHttpRequest
+  # エラー: Greasemonkey access violation: unsafeWindow cannot call GM_xmlhttpRequest.
 
-((d, func) ->
-  h = d.getElementsByTagName('head')[0];
-  s1 = d.createElement("script");
-  s1.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js");
-  s1.addEventListener 'load', ->
-    s2 = d.createElement("script");
-    s2.textContent = "jQuery.noConflict();(" + func.toString() + ")(jQuery);";
-    h.appendChild(s2);
-  , false
-  h.appendChild(s1);
-)(document, ($) ->
+  # h = d.getElementsByTagName('head')[0];
+  # s1 = d.createElement("script");
+  # s1.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js");
+  # s1.addEventListener 'load', ->
+  #   s2 = d.createElement("script");
+  #   s2.textContent = "jQuery.noConflict();(" + func.toString() + ")(jQuery);";
+  #   h.appendChild(s2);
+  # , false
+  # h.appendChild(s1);
+
+  # error
+  # type property can't be changed
+  # console.log "hoge st"
+  # check = ->
+  #   if unsafeWindow.jQuery?
+  #     func(unsafeWindow.jQuery)
+  #     true
+  #   else
+  #     false
+
+  # if check()
+  #   return;
+  # s = d.createElement('script');
+  # s.type = 'text/javascript';
+  # s.src = "http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js";
+  # #s.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js'
+  # d.getElementsByTagName('head')[0].appendChild(s);
+  # do ->
+  #   if check()
+  #     return;
+  #   setTimeout(arguments.callee, 100);
+#)(document, ($) ->
+jQuery = 0
+
+# Check if jQuery's loaded
+GM_wait = ->
+  if (typeof unsafeWindow.jQuery == 'undefined')
+    window.setTimeout(GM_wait, 100);
+  else
+    jQuery = unsafeWindow.jQuery.noConflict(true);
+    letsJQuery();
+
+do ->
+  if (typeof unsafeWindow.jQuery == 'undefined')
+    GM_Head = document.getElementsByTagName('head')[0] || document.documentElement
+    GM_JQ = document.createElement('script');
+    GM_JQ.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js';
+    GM_JQ.type = 'text/javascript';
+    GM_JQ.async = true;
+
+    GM_Head.insertBefore(GM_JQ, GM_Head.firstChild);
+  GM_wait();
+
+# All your GM code must be inside this function
+letsJQuery = ->
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
+  #$ = window.jQuery;
   siteinfo = window.LDRize.getSiteinfo();
   paragraphs = $X siteinfo['paragraph']
   baseZindex = 1000
@@ -150,7 +201,8 @@
       .css("width":barWidth,"height":height)
     base.append(bar)
 
-    check = $('<input>').attr("type":"checkbox", "position":"absolute")
+    check = $('<input type="checkbox"/>').attr("position":"absolute")
+    # because cannot change type
     bar.append(check)
 
     select = $('<div>').attr("class","select").text("この文書を")
@@ -158,12 +210,12 @@
     ul=$("<ul>").css("padding":10, "border-radius":3, "list-style-type":"none")#"background-color":"blue",
     li=$('<a>').text("含む").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
   #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
-    check = $('<input>').attr("type":"checkbox", "position":"absolute")
+    check = $('<input type="checkbox"/>').attr( "position":"absolute")
     li.prepend(check)
     ul.append(li)
 
     li=$('<a>').text("除外する").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
-    check = $('<input>').attr("type":"checkbox", "position":"absolute")
+    check = $('<input type="checkbox"/>').attr("position":"absolute")
     li.prepend(check)
     ul.append(li)
 
@@ -285,9 +337,40 @@
   $("div.bar:eq(0)").show()
   $("div.select:eq(0)").show()
   $("div.keywords:eq(0)").show()
+
+  D = window.Minibuffer.D();
+  api_url = "http://localhost:3000/api"
+  # for gm_xmlhttprequest security limitation http://wiki.greasespot.net/Greasemonkey_access_violation
+  D.xhttp.post_j = (url, data) ->
+      #setTimeout ->
+    return D.xhttp {
+      method:"post", url:url, data:data,
+      headers:{"Content-Type":"application/json; charset = utf-8"}}
+    #, 0
+
+  get_url = (node) ->
+    $X(siteinfo['link'], node)?[0].href
+
+  post_data = JSON.stringify {
+    all_urls: $X(siteinfo['paragraph']).map(get_url)}
+
+  window.Minibuffer.status('Preload2', 'Preloading2...')# + count
+
+  D.xhttp.post_j(api_url + "/preload2", post_data)
+  .next (response) ->
+    ret = JSON.parse(response.responseText);
+    console.log(ret);
+    console.log("post f");
+    console.log(ret.status);
+    window.Minibuffer.status(
+      'Preload2', 'Preloading2... ' + ret.status +'.', 300) # + count
+    true #for deferred
+  #.next () ->
+
+
   ####
   window.flag=1
-)
+#)
 #if (top==window)
 # GM_addStyle [".select {background: gray; color: white; cursor: pointer; padding: 0.2em;}"].join('')
 GM_addStyle('''
