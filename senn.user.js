@@ -7,6 +7,7 @@
 // @include        http://*
 // ==/UserScript==
 ;var GM_wait, jQuery, letsJQuery;
+console.log = unsafeWindow.console.log;
 jQuery = 0;
 GM_wait = function() {
   if (typeof unsafeWindow.jQuery === 'undefined') {
@@ -29,13 +30,14 @@ GM_wait = function() {
   return GM_wait();
 })();
 letsJQuery = function() {
-  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, li, otherKeywords, paragraphs, post_data, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex;
+  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, inverted_index, keyword, li, otherKeywords, otherKeywordsZindex, paragraphs, post_data, root_div, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, word, words, wordsIndex, words_index, _i, _j, _len, _len2;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
   siteinfo = window.LDRize.getSiteinfo();
-  paragraphs = $X(siteinfo['paragraph']);
+  paragraphs = $($X(siteinfo['paragraph']));
   baseZindex = 1000;
+  grayZindex = 1000;
   speed = "fast";
   wordsIndex = {
     "ruby on rails": [0, 2],
@@ -76,13 +78,32 @@ letsJQuery = function() {
       return $("div.bar", context).hide();
     }
   };
-  showGraylayer = function(callback) {
-    console.warn("showGray");
-    return $("#graylayer").stop(true, true).fadeIn(speed, callback);
+  otherKeywords = $('#trev a');
+  graylayer = $("#graylayer");
+  otherKeywordsZindex = otherKeywords.css("z-index");
+  console.log(otherKeywordsZindex);
+  showGraylayer = function() {
+    var id;
+    id = graylayer.data('timer');
+    console.log("ct" + id);
+    clearTimeout(id);
+    console.log("showGray");
+    otherKeywords.css({
+      "z-index": grayZindex + 1
+    });
+    graylayer.stop(true, true).fadeIn(speed);
   };
   hideGraylayer = function(callback) {
-    console.warn("hideGray");
-    return $("#graylayer").stop(true, true).fadeOut(speed, callback);
+    var id;
+    graylayer.data('timer', setTimeout(function() {
+      console.log("hideGray");
+      graylayer.stop(true, true).fadeOut(speed);
+      otherKeywords.css({
+        "z-index": otherKeywordsZindex
+      });
+    }, 500));
+    id = graylayer.data('timer');
+    return console.log("st" + id);
   };
   genShow = function(indexes) {
     this.indexes = indexes;
@@ -104,10 +125,7 @@ letsJQuery = function() {
         _fn(index);
       }
       console.info($(this));
-      showGraylayer();
-      return $(this).css({
-        "z-index": baseZindex + 5
-      });
+      return showGraylayer();
     };
   };
   genHide = function(indexes) {
@@ -117,9 +135,6 @@ letsJQuery = function() {
       console.debug("genHide");
       index2 = wordsIndex[$(this).text()];
       console.info(index2);
-      $(this).css({
-        "z-index": baseZindex
-      });
       return hideGraylayer(function() {
         var index, _i, _len, _results;
         _results = [];
@@ -180,7 +195,7 @@ letsJQuery = function() {
   $("div.base").remove();
   barWidth = 30;
   $(paragraphs).each(function() {
-    var a, bar, base, check, height, keywords, li, paragraph, select, ul, word, wrapdiv, _i, _len, _ref;
+    var bar, base, check, height, keywords, li, paragraph, select, ul, wrapdiv;
     paragraph = $(this);
     if (window.flag != null) {
       paragraph.unwrap();
@@ -243,32 +258,13 @@ letsJQuery = function() {
     select.append(ul);
     base.append(select);
     keywords = $('<div>').attr("class", "keywords").css({
-      "background-color": "black",
-      "border-radius": 8,
-      "top": 0,
-      "left": barWidth,
       "height": height,
-      "width": 200,
-      "float": "left"
+      "width": 100
     });
     base.append(keywords);
-    ul = $("<ul>").css({
-      "padding": 10
-    });
-    _ref = ["W3C", "タグ", "ルビ"];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      word = _ref[_i];
-      a = $('<a>').text(word).css({
-        "color": "white"
-      }).attr({
-        "href": "http://www.google.co.jp/"
-      }).wrap("<li>").hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]));
-      ul.append(a.parent());
-    }
     select.hide();
     bar.hide();
     keywords.hide();
-    keywords.prepend(ul);
     return paragraph.css({
       "z-index": baseZindex + 1
     });
@@ -277,15 +273,7 @@ letsJQuery = function() {
   $("body").append($("<div>").attr({
     "id": "graylayer"
   }).css({
-    "background": "black",
-    "z-index": baseZindex,
-    "opacity": 0.5,
-    "position": "fixed",
-    "top": 0,
-    "left": 0,
-    "height": "100%",
-    "width": "100%",
-    "display": "none"
+    "z-index": grayZindex
   }));
   $(paragraphs).css({
     "z-index": baseZindex,
@@ -293,13 +281,8 @@ letsJQuery = function() {
     "border-radius": 8,
     "background-color": "white"
   });
-  otherKeywords = $('#trev a').css({
-    "position": "relative",
-    "border-radius": 3,
-    "background-color": "white"
-  });
-  $(otherKeywords[0]).hover(genShow([0, 3]), genHide([0, 3]));
-  $(otherKeywords[1]).hover(genShow([1]), genHide([1]));
+  $(otherKeywords[0]).hover(showGraylayer, hideGraylayer);
+  $(otherKeywords[1]).hover(showGraylayer, hideGraylayer);
   $("#tooltip").remove();
   ul = $("<ul>").css({
     "padding": 10,
@@ -338,7 +321,7 @@ letsJQuery = function() {
   $("body").append(ul.parent());
   tooltip = $("div#tooltip");
   showTooltip = function(e) {
-    var graylayer, that;
+    var that;
     console.debug("showTooltip");
     graylayer = $("#graylayer");
     that = this;
@@ -364,16 +347,16 @@ letsJQuery = function() {
   $("a:eq(1)", $("div.keywords").first()).css({
     "position": "relative"
   }).hover(showTooltip, hideTooltip);
-  $(otherKeywords[0]).css({
-    "position": "relative"
-  }).hover(showTooltip, hideTooltip);
-  $(otherKeywords[1]).css({
-    "position": "relative"
-  }).hover(showTooltip, hideTooltip);
+  $(otherKeywords[0]).hover(showTooltip, hideTooltip);
+  $(otherKeywords[1]).hover(showTooltip, hideTooltip);
   $(paragraphs[0]).mouseenter();
   $("div.bar:eq(0)").show();
   $("div.select:eq(0)").show();
   $("div.keywords:eq(0)").show();
+  $(paragraphs[1]).mouseenter();
+  $("div.bar:eq(1)").show();
+  $("div.select:eq(1)").show();
+  $("div.keywords:eq(1)").show();
   D = window.Minibuffer.D();
   api_url = "http://localhost:3000/api";
   D.xhttp.post_j = function(url, data) {
@@ -400,9 +383,29 @@ letsJQuery = function() {
     console.log(ret);
     console.log("post f");
     console.log(ret.status);
-    window.Minibuffer.status('Preload2', 'Preloading2... ' + ret.status(+'.', 300));
-    return true;
+    window.Minibuffer.status('Preload2', "Preloading2... " + ret.status + ".", 3000);
   });
+  root_divs = paragraphs.parent();
+  words_index = [["W3C", "タグ", "ルビ"], ["Add-ons", "Firefox", "ルビ"], ["W3C3", "タグ", "ルビ"], ["W3C4", "タグ", "ルビ"], ["W3C5", "タグ", "ルビ"], ["W3C6", "タグ", "ルビ"], ["W3C7", "タグ", "ルビ"], ["W3C8", "タグ", "ルビ"], ["W3C9", "タグ", "ルビ"], ["W3C10", "タグ", "ルビ"]];
+  inverted_index = {
+    "ruby on rails": [0, 2],
+    "ruby 入門": [1],
+    "W3C": [0],
+    "タグ": [0, 2],
+    "ルビ": [0, 1, 2]
+  };
+  for (_i = 0, _len = root_divs.length; _i < _len; _i++) {
+    root_div = root_divs[_i];
+    ul = $("<ul>");
+    words = words_index[_i];
+    for (_j = 0, _len2 = words.length; _j < _len2; _j++) {
+      word = words[_j];
+      a = $('<a>').text(word).wrap("<li>").hover(function() {}, function() {});
+      ul.append(a.parent());
+    }
+    keyword = $("div.keywords", root_div);
+    keyword.prepend(ul);
+  }
   return window.flag = 1;
 };
-GM_addStyle('div.base div {\n  background-color: black;\n  border-radius: 8px 8px 8px 8px;\n  color: white;\n  float: left;\n}');
+GM_addStyle('div.base div {\n		background-color: black;\n		border-radius: 8px 8px 8px 8px;\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base a:hover {\n		color: #FFFFFF;\n}\ndiv.base a {\n		color: #BFBFBF;\n}\ndiv.base ul {\n		padding: 10px;\n}\n#trev a {\n		border-radius: 15px;\n		position: relative;					/*for tooltip */\n    /* line-height: 30px; */\n    margin-right: 10px;\n    padding: 5px 15px;\n}\n#trev a:hover {\n		background-color: #FFFFFF;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');

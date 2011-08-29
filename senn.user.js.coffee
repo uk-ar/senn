@@ -8,48 +8,9 @@
 // @include        http://*
 // ==/UserScript==
 `
-# // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
-#f = (x) -> x + 4
-#http://www.otchy.net/20091104/use-jquery-on-greasemonkey/
-# @resource
-# http://d.hatena.ne.jp/shogo4405/20110529/1306651136
-#((d, func) ->
-  # error
-  # when gm_XmlHttpRequest
-  # エラー: Greasemonkey access violation: unsafeWindow cannot call GM_xmlhttpRequest.
+#for debug
+console.log = unsafeWindow.console.log
 
-  # h = d.getElementsByTagName('head')[0];
-  # s1 = d.createElement("script");
-  # s1.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js");
-  # s1.addEventListener 'load', ->
-  #   s2 = d.createElement("script");
-  #   s2.textContent = "jQuery.noConflict();(" + func.toString() + ")(jQuery);";
-  #   h.appendChild(s2);
-  # , false
-  # h.appendChild(s1);
-
-  # error
-  # type property can't be changed
-  # console.log "hoge st"
-  # check = ->
-  #   if unsafeWindow.jQuery?
-  #     func(unsafeWindow.jQuery)
-  #     true
-  #   else
-  #     false
-
-  # if check()
-  #   return;
-  # s = d.createElement('script');
-  # s.type = 'text/javascript';
-  # s.src = "http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js";
-  # #s.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js'
-  # d.getElementsByTagName('head')[0].appendChild(s);
-  # do ->
-  #   if check()
-  #     return;
-  #   setTimeout(arguments.callee, 100);
-#)(document, ($) ->
 jQuery = 0
 
 # Check if jQuery's loaded
@@ -67,7 +28,6 @@ do ->
     GM_JQ.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js';
     GM_JQ.type = 'text/javascript';
     GM_JQ.async = true;
-
     GM_Head.insertBefore(GM_JQ, GM_Head.firstChild);
   GM_wait();
 
@@ -78,8 +38,9 @@ letsJQuery = ->
   $ = jQuery;
   #$ = window.jQuery;
   siteinfo = window.LDRize.getSiteinfo();
-  paragraphs = $X siteinfo['paragraph']
+  paragraphs = $($X(siteinfo['paragraph']))
   baseZindex = 1000
+  grayZindex = 1000
   speed="fast"
   wordsIndex ={"ruby on rails":[0,2],"ruby 入門":[1]}
 
@@ -112,12 +73,30 @@ letsJQuery = ->
         $("div.bar",context).hide()
     else
       $("div.bar",context).hide()
-  showGraylayer = (callback)->
-    console.warn("showGray")
-    $("#graylayer").stop(true,true).fadeIn speed, callback
-  hideGraylayer = (callback)->
-    console.warn("hideGray")
-    $("#graylayer").stop(true,true).fadeOut speed, callback
+
+  otherKeywords=$('#trev a')
+  graylayer = $("#graylayer")
+  otherKeywordsZindex = otherKeywords.css("z-index")
+  console.log otherKeywordsZindex
+  showGraylayer = ->
+    id = graylayer.data 'timer'
+    console.log("ct#{id}")
+    clearTimeout id
+    console.log("showGray")
+    otherKeywords.css("z-index":grayZindex + 1)#.animate({"z-index":grayZindex + 1}, 0)
+    graylayer.stop(true,true).fadeIn(speed)
+    return
+  hideGraylayer = (callback) ->
+    graylayer.data 'timer', setTimeout ->
+      console.log("hideGray")
+      graylayer.stop(true,true).fadeOut(speed)
+      otherKeywords.css("z-index":otherKeywordsZindex)
+      #, callback
+      return
+      #
+    , 500
+    id = graylayer.data 'timer'
+    console.log("st#{id}")
 
   genShow = (indexes) ->
     @indexes = indexes
@@ -133,7 +112,7 @@ letsJQuery = ->
       console.info($(this))
       showGraylayer()
       #$("div.base").css("left":0,"right":0,"width":"")
-      $(this).css("z-index":baseZindex+5)#,"position":"relative")#for other keyword
+      #$(this).css("z-index":baseZindex+5)#,"position":"relative")#for other keyword
 
   genHide = (indexes) ->
     @indexes = indexes
@@ -141,7 +120,7 @@ letsJQuery = ->
       console.debug("genHide")
       index2 = wordsIndex[$(this).text()]
       console.info(index2)
-      $(this).css("z-index":baseZindex)#for other keyword
+      #$(this).css("z-index":baseZindex)#for other keyword
       hideGraylayer ->
         for index in indexes
           do (index) ->
@@ -223,19 +202,20 @@ letsJQuery = ->
     base.append(select)
 
     keywords = $('<div>').attr("class","keywords")
-      .css("background-color":"black","border-radius":8,"top":0, "left":barWidth,"height":height,"width":200,"float":"left")#"position":"absolute",
+      .css("height":height,"width":100)#"position":"absolute","top":0
 
     #bar.append(keywords)
     base.append(keywords)
 
-    ul=$("<ul>").css("padding":10)
-    #for word in ["ruby on rails","ruby 入門"]
-    for word in ["W3C","タグ", "ルビ"]
-      a=$('<a>').text(word)
-        .css("color":"white").attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
-      # a.hover ->showParagraphs(a),
-      # -> hideParagraphs(a)
-      ul.append(a.parent())
+    # ul=$("<ul>")
+    # #for word in ["ruby on rails","ruby 入門"]
+    # for word in ["W3C","タグ", "ルビ"]
+    #   a=$('<a>').text(word)
+    #     .attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
+    #   # a.hover ->showParagraphs(a),
+    #   # -> hideParagraphs(a)
+    #   ul.append(a.parent())
+    # keywords.prepend(ul)
     #base.hover ->
       #$("div.bar:not(:animated)",this).show()
       #showBar(this)
@@ -249,8 +229,6 @@ letsJQuery = ->
     #   showKeywords(paragraph.parent())
     # ,->
     #   hideKeywords(paragraph.parent())
-    keywords.prepend(ul)
-
     paragraph.css("z-index":baseZindex+1)
 
   ####
@@ -266,13 +244,17 @@ letsJQuery = ->
   # position fixed because scroll
   $("body").append(
     $("<div>").attr("id":"graylayer")
-    .css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none"))
+    .css("z-index":grayZindex)
+    #.css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none")
+    )
   # position relative because z-index
   $(paragraphs).css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
 
-  otherKeywords=$('#trev a').css("position":"relative","border-radius":3,"background-color":"white")
-  $(otherKeywords[0]).hover genShow([0, 3]), genHide([0, 3])
-  $(otherKeywords[1]).hover genShow([1]), genHide([1])
+  #otherKeywords=$('#trev a')#.css("position":"relative","border-radius":3,"background-color":"white")
+  $(otherKeywords[0]).hover showGraylayer, hideGraylayer
+  # genShow([0, 3]), genHide([0, 3])
+  $(otherKeywords[1]).hover showGraylayer, hideGraylayer
+  #.hover genShow([1]), genHide([1])
   ####
   $("#tooltip").remove()
   ####
@@ -328,15 +310,20 @@ letsJQuery = ->
   $("a:eq(1)", $("div.keywords").first()).css("position":"relative").hover showTooltip
   , hideTooltip
 
-  $(otherKeywords[0]).css("position":"relative").hover showTooltip
+  $(otherKeywords[0]).hover showTooltip
   , hideTooltip
-  $(otherKeywords[1]).css("position":"relative").hover showTooltip
+  $(otherKeywords[1]).hover showTooltip
   , hideTooltip
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
   $(paragraphs[0]).mouseenter()
   $("div.bar:eq(0)").show()
   $("div.select:eq(0)").show()
   $("div.keywords:eq(0)").show()
+
+  $(paragraphs[1]).mouseenter()
+  $("div.bar:eq(1)").show()
+  $("div.select:eq(1)").show()
+  $("div.keywords:eq(1)").show()
 
   D = window.Minibuffer.D();
   api_url = "http://localhost:3000/api"
@@ -363,25 +350,103 @@ letsJQuery = ->
     console.log("post f");
     console.log(ret.status);
     window.Minibuffer.status(
-      'Preload2', 'Preloading2... ' + ret.status +'.', 300) # + count
-    true #for deferred
+      'Preload2', "Preloading2... #{ret.status}.", 3000) # + count
+    return #for deferred
   #.next () ->
 
+  root_divs = paragraphs.parent()
+  words_index = [
+    ["W3C","タグ", "ルビ"],
+    ["Add-ons", "Firefox", "ルビ"],
+    ["W3C3","タグ", "ルビ"],
+    ["W3C4","タグ", "ルビ"],
+    ["W3C5","タグ", "ルビ"],
+    ["W3C6","タグ", "ルビ"],
+    ["W3C7","タグ", "ルビ"],
+    ["W3C8","タグ", "ルビ"],
+    ["W3C9","タグ", "ルビ"],
+    ["W3C10","タグ", "ルビ"],
+  ]
+  inverted_index = {
+    "ruby on rails":[0,2],
+    "ruby 入門":[1],
+    "W3C":[0],
+    "タグ":[0, 2],
+    "ルビ":[0, 1, 2],
+    }
+  for root_div in root_divs
+    ul=$("<ul>")
+    #for word in ["ruby on rails","ruby 入門"]
+    words = words_index[_i]
+    for word in words #["W3C","タグ", "ルビ"]
+      #console.log(this)
+      #that = this
+      a=$('<a>').text(word).wrap("<li>")
+      .hover  ->
+        #console.log(that)
+        #console.log(this)
+        return
+      , ->
+        #console.log(this)
+        return
+      #.hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
+      # a.hover ->showParagraphs(a),
+      # -> hideParagraphs(a)
+      ul.append(a.parent())
+    keyword = $("div.keywords", root_div)
+    keyword.prepend(ul)
 
   ####
   window.flag=1
 #)
-#if (top==window)
-# GM_addStyle [".select {background: gray; color: white; cursor: pointer; padding: 0.2em;}"].join('')
+  # $X = window.Minibuffer.$X;
+  # $N = window.Minibuffer.$N;
+  # $ = jQuery;
+  # #$ = window.jQuery;
+  # siteinfo = window.LDRize.getSiteinfo();
+  # paragraphs = $($X(siteinfo['paragraph']))
+  # root_divs = paragraphs.parent()
+  # baseZindex = 1000
+  # speed="fast"
+
 GM_addStyle('''
 div.base div {
-  background-color: black;
-  border-radius: 8px 8px 8px 8px;
-  color: white;
-  float: left;
+		background-color: black;
+		border-radius: 8px 8px 8px 8px;
+		float: left;
+		color: white;								/* for explain text */
+}
+div.base a:hover {
+		color: #FFFFFF;
+}
+div.base a {
+		color: #BFBFBF;
+}
+div.base ul {
+		padding: 10px;
+}
+#trev a {
+		border-radius: 15px;
+		position: relative;					/*for tooltip */
+    /* line-height: 30px; */
+    margin-right: 10px;
+    padding: 5px 15px;
+}
+#trev a:hover {
+		background-color: #FFFFFF;
+}
+#graylayer {
+		background-color:black;
+    opacity: 0.5;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+		display: none;
 }
 ''')
-
+#console.log("aa")
 #bug strange overlay keyword suggest
 
 # Local Variables:
