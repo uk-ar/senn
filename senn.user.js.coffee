@@ -350,33 +350,35 @@ letsJQuery = ->
   .next (response) ->
     ret = JSON.parse(response.responseText);
     console.log(ret);
-    console.log("post f");
-    console.log(ret.status);
     window.Minibuffer.status(
       'Preload2', "Preloading2... #{ret.status}.", 3000) # + count
+    words_index = ret.words_index
+    inverted_index = ret.inverted_index
+    for root_div, i in root_divs
+      ul=$("<ul>")
+      words = words_index[i]
+      for word in words #["W3C","タグ", "ルビ"]
+        #console.log(word)
+        #that = this
+        a=$('<a>').text(word).wrap("<li>")
+        .mouseover ->
+          word = $(this).text()
+          console.log(word)
+          console.log(inverted_index[word])
+          return
+        .mouseout ->
+          #console.log(this)
+          return
+        #.hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
+        # a.hover ->showParagraphs(a),
+        # -> hideParagraphs(a)
+        ul.append(a.parent())
+      keyword = $("div.keywords", root_div)
+      keyword.prepend(ul)
     return #for deferred
   #.next () ->
 
   root_divs = paragraphs.parent()
-  words_index = [
-    ["W3C","タグ", "ルビ"],
-    ["Add-ons", "Firefox", "ルビ"],
-    ["W3C3","タグ", "ルビ"],
-    ["W3C4","タグ", "ルビ"],
-    ["W3C5","タグ", "ルビ"],
-    ["W3C6","タグ", "ルビ"],
-    ["W3C7","タグ", "ルビ"],
-    ["W3C8","タグ", "ルビ"],
-    ["W3C9","タグ", "ルビ"],
-    ["W3C10","タグ", "ルビ"],
-  ]
-  inverted_index = {
-    "ruby on rails":[0,2],
-    "ruby 入門":[1],
-    "W3C":[0],
-    "タグ":[0, 2],
-    "ルビ":[0, 1, 2],
-    }
 
   #console.log(otherKeywords)
   for keyword in otherKeywords
@@ -386,28 +388,6 @@ letsJQuery = ->
       )
   console.log $("div.dummy")
   $("div.dummy").hover showGraylayer, hideGraylayer
-
-  for root_div in root_divs
-    ul=$("<ul>")
-    #for word in ["ruby on rails","ruby 入門"]
-    words = words_index[_i]
-    for word in words #["W3C","タグ", "ルビ"]
-      #console.log(this)
-      #that = this
-      a=$('<a>').text(word).wrap("<li>")
-      .hover  ->
-        #console.log(that)
-        #console.log(this)
-        return
-      , ->
-        #console.log(this)
-        return
-      #.hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
-      # a.hover ->showParagraphs(a),
-      # -> hideParagraphs(a)
-      ul.append(a.parent())
-    keyword = $("div.keywords", root_div)
-    keyword.prepend(ul)
 
   ####
   window.flag=1

@@ -32,7 +32,7 @@ GM_wait = function() {
   return GM_wait();
 })();
 letsJQuery = function() {
-  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, inverted_index, keyword, li, otherKeywords, paragraphs, post_data, root_div, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, word, words, wordsIndex, words_index, _i, _j, _k, _len, _len2, _len3;
+  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, keyword, li, otherKeywords, paragraphs, post_data, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex, _i, _len;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -363,22 +363,30 @@ letsJQuery = function() {
   });
   window.Minibuffer.status('Preload2', 'Preloading2...');
   D.xhttp.post_j(api_url + "/preload2", post_data).next(function(response) {
-    var ret;
+    var i, inverted_index, keyword, ret, root_div, word, words, words_index, _i, _len, _len2;
     ret = JSON.parse(response.responseText);
     console.log(ret);
-    console.log("post f");
-    console.log(ret.status);
     window.Minibuffer.status('Preload2', "Preloading2... " + ret.status + ".", 3000);
+    words_index = ret.words_index;
+    inverted_index = ret.inverted_index;
+    for (i = 0, _len = root_divs.length; i < _len; i++) {
+      root_div = root_divs[i];
+      ul = $("<ul>");
+      words = words_index[i];
+      for (_i = 0, _len2 = words.length; _i < _len2; _i++) {
+        word = words[_i];
+        a = $('<a>').text(word).wrap("<li>").mouseover(function() {
+          word = $(this).text();
+          console.log(word);
+          console.log(inverted_index[word]);
+        }).mouseout(function() {});
+        ul.append(a.parent());
+      }
+      keyword = $("div.keywords", root_div);
+      keyword.prepend(ul);
+    }
   });
   root_divs = paragraphs.parent();
-  words_index = [["W3C", "タグ", "ルビ"], ["Add-ons", "Firefox", "ルビ"], ["W3C3", "タグ", "ルビ"], ["W3C4", "タグ", "ルビ"], ["W3C5", "タグ", "ルビ"], ["W3C6", "タグ", "ルビ"], ["W3C7", "タグ", "ルビ"], ["W3C8", "タグ", "ルビ"], ["W3C9", "タグ", "ルビ"], ["W3C10", "タグ", "ルビ"]];
-  inverted_index = {
-    "ruby on rails": [0, 2],
-    "ruby 入門": [1],
-    "W3C": [0],
-    "タグ": [0, 2],
-    "ルビ": [0, 1, 2]
-  };
   for (_i = 0, _len = otherKeywords.length; _i < _len; _i++) {
     keyword = otherKeywords[_i];
     $(keyword).prepend($("<div>").attr({
@@ -387,18 +395,6 @@ letsJQuery = function() {
   }
   console.log($("div.dummy"));
   $("div.dummy").hover(showGraylayer, hideGraylayer);
-  for (_j = 0, _len2 = root_divs.length; _j < _len2; _j++) {
-    root_div = root_divs[_j];
-    ul = $("<ul>");
-    words = words_index[_i];
-    for (_k = 0, _len3 = words.length; _k < _len3; _k++) {
-      word = words[_k];
-      a = $('<a>').text(word).wrap("<li>").hover(function() {}, function() {});
-      ul.append(a.parent());
-    }
-    keyword = $("div.keywords", root_div);
-    keyword.prepend(ul);
-  }
   return window.flag = 1;
 };
 GM_addStyle('div.base div {\n		background-color: black;\n		border-radius: 8px 8px 8px 8px;\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n		padding-top: 3px;\n		padding-bottom: 3px;\n		padding-left: 10px;\n		color: #BFBFBF;\n}\ndiv.base li:hover {\n		background-color: rgba(255, 255, 255, 0.1);\n		color: #FFFFFF;\n}\n#trev a {\n		border-radius: 15px;\n		position: relative;					/*for tooltip */\n    /* line-height: 30px; */\n    margin-right: 10px;\n    /* padding: 5px 15px; */\n}\n#trev a:hover {\n		background-color: #FFFFFF;\n		z-index:1001;\n}\ndiv.dummy {\n    top: 0;\n		bottom: 0;\n    left: 0;\n		right: 0;\n    position: absolute;\n    z-index: 1001;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
