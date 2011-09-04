@@ -10,6 +10,8 @@
 `
 #for debug
 console.log = unsafeWindow.console.log
+unsafeWindow.Minibuffer = window.Minibuffer
+unsafeWindow.LDRize = window.LDRize
 
 jQuery = 0
 
@@ -76,21 +78,22 @@ letsJQuery = ->
 
   otherKeywords=$('#trev a')
   graylayer = $("#graylayer")
-  otherKeywordsZindex = otherKeywords.css("z-index")
-  console.log otherKeywordsZindex
+  #otherKeywordsZindex = otherKeywords.css("z-index")
+  #console.log otherKeywordsZindex
   showGraylayer = ->
     id = graylayer.data 'timer'
     console.log("ct#{id}")
     clearTimeout id
     console.log("showGray")
-    otherKeywords.css("z-index":grayZindex + 1)#.animate({"z-index":grayZindex + 1}, 0)
+    #otherKeywords.css("z-index":grayZindex + 1)#.animate({"z-index":grayZindex + 1}, 0)
     graylayer.stop(true,true).fadeIn(speed)
     return
   hideGraylayer = (callback) ->
+    #http://stackoverflow.com/questions/3329197/jquery-delay-or-timeout-with-stop
     graylayer.data 'timer', setTimeout ->
       console.log("hideGray")
       graylayer.stop(true,true).fadeOut(speed)
-      otherKeywords.css("z-index":otherKeywordsZindex)
+      #otherKeywords.css("z-index":otherKeywordsZindex)
       #, callback
       return
       #
@@ -187,10 +190,10 @@ letsJQuery = ->
     select = $('<div>').attr("class","select").text("この文書を")
       .css("height":height)
     ul=$("<ul>").css("padding":10, "border-radius":3, "list-style-type":"none")#"background-color":"blue",
-    li=$('<a>').text("含む").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
+    li=$('<a>').text("含む").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#.css("color":"white", "float":"right")
   #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
-    check = $('<input type="checkbox"/>').attr( "position":"absolute")
-    li.prepend(check)
+    #check = $('<input type="checkbox"/>').attr( "position":"absolute")
+    #li.prepend(check)
     ul.append(li)
 
     li=$('<a>').text("除外する").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
@@ -251,9 +254,9 @@ letsJQuery = ->
   $(paragraphs).css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
 
   #otherKeywords=$('#trev a')#.css("position":"relative","border-radius":3,"background-color":"white")
-  $(otherKeywords[0]).hover showGraylayer, hideGraylayer
+  #$(otherKeywords[0]).hover showGraylayer, hideGraylayer
   # genShow([0, 3]), genHide([0, 3])
-  $(otherKeywords[1]).hover showGraylayer, hideGraylayer
+  #$(otherKeywords[1]).hover showGraylayer, hideGraylayer
   #.hover genShow([1]), genHide([1])
   ####
   $("#tooltip").remove()
@@ -374,6 +377,16 @@ letsJQuery = ->
     "タグ":[0, 2],
     "ルビ":[0, 1, 2],
     }
+
+  #console.log(otherKeywords)
+  for keyword in otherKeywords
+    #console.log($(keyword))
+    $(keyword).prepend(
+      $("<div>").attr("class":"dummy")
+      )
+  console.log $("div.dummy")
+  $("div.dummy").hover showGraylayer, hideGraylayer
+
   for root_div in root_divs
     ul=$("<ul>")
     #for word in ["ruby on rails","ruby 入門"]
@@ -416,24 +429,34 @@ div.base div {
 		float: left;
 		color: white;								/* for explain text */
 }
-div.base a:hover {
-		color: #FFFFFF;
-}
-div.base a {
+div.base li {
+		padding-top: 3px;
+		padding-bottom: 3px;
+		padding-left: 10px;
 		color: #BFBFBF;
 }
-div.base ul {
-		padding: 10px;
+div.base li:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+		color: #FFFFFF;
 }
 #trev a {
 		border-radius: 15px;
 		position: relative;					/*for tooltip */
     /* line-height: 30px; */
     margin-right: 10px;
-    padding: 5px 15px;
+    /* padding: 5px 15px; */
 }
 #trev a:hover {
 		background-color: #FFFFFF;
+		z-index:1001;
+}
+div.dummy {
+    top: 0;
+		bottom: 0;
+    left: 0;
+		right: 0;
+    position: absolute;
+    z-index: 1001;
 }
 #graylayer {
 		background-color:black;
@@ -450,5 +473,5 @@ div.base ul {
 #bug strange overlay keyword suggest
 
 # Local Variables:
-# mode: coffee
+# mode: coffee-css-mumamo
 # End:

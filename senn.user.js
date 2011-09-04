@@ -8,6 +8,8 @@
 // ==/UserScript==
 ;var GM_wait, jQuery, letsJQuery;
 console.log = unsafeWindow.console.log;
+unsafeWindow.Minibuffer = window.Minibuffer;
+unsafeWindow.LDRize = window.LDRize;
 jQuery = 0;
 GM_wait = function() {
   if (typeof unsafeWindow.jQuery === 'undefined') {
@@ -30,7 +32,7 @@ GM_wait = function() {
   return GM_wait();
 })();
 letsJQuery = function() {
-  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, inverted_index, keyword, li, otherKeywords, otherKeywordsZindex, paragraphs, post_data, root_div, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, word, words, wordsIndex, words_index, _i, _j, _len, _len2;
+  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, inverted_index, keyword, li, otherKeywords, paragraphs, post_data, root_div, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, word, words, wordsIndex, words_index, _i, _j, _k, _len, _len2, _len3;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -80,17 +82,12 @@ letsJQuery = function() {
   };
   otherKeywords = $('#trev a');
   graylayer = $("#graylayer");
-  otherKeywordsZindex = otherKeywords.css("z-index");
-  console.log(otherKeywordsZindex);
   showGraylayer = function() {
     var id;
     id = graylayer.data('timer');
     console.log("ct" + id);
     clearTimeout(id);
     console.log("showGray");
-    otherKeywords.css({
-      "z-index": grayZindex + 1
-    });
     graylayer.stop(true, true).fadeIn(speed);
   };
   hideGraylayer = function(callback) {
@@ -98,9 +95,6 @@ letsJQuery = function() {
     graylayer.data('timer', setTimeout(function() {
       console.log("hideGray");
       graylayer.stop(true, true).fadeOut(speed);
-      otherKeywords.css({
-        "z-index": otherKeywordsZindex
-      });
     }, 500));
     id = graylayer.data('timer');
     return console.log("st" + id);
@@ -235,14 +229,7 @@ letsJQuery = function() {
     });
     li = $('<a>').text("含む").attr({
       "href": "http://www.google.co.jp/"
-    }).css({
-      "color": "white",
-      "float": "right"
     }).wrap("<li>").parent();
-    check = $('<input type="checkbox"/>').attr({
-      "position": "absolute"
-    });
-    li.prepend(check);
     ul.append(li);
     li = $('<a>').text("除外する").attr({
       "href": "http://www.google.co.jp/"
@@ -281,8 +268,6 @@ letsJQuery = function() {
     "border-radius": 8,
     "background-color": "white"
   });
-  $(otherKeywords[0]).hover(showGraylayer, hideGraylayer);
-  $(otherKeywords[1]).hover(showGraylayer, hideGraylayer);
   $("#tooltip").remove();
   ul = $("<ul>").css({
     "padding": 10,
@@ -394,12 +379,20 @@ letsJQuery = function() {
     "タグ": [0, 2],
     "ルビ": [0, 1, 2]
   };
-  for (_i = 0, _len = root_divs.length; _i < _len; _i++) {
-    root_div = root_divs[_i];
+  for (_i = 0, _len = otherKeywords.length; _i < _len; _i++) {
+    keyword = otherKeywords[_i];
+    $(keyword).prepend($("<div>").attr({
+      "class": "dummy"
+    }));
+  }
+  console.log($("div.dummy"));
+  $("div.dummy").hover(showGraylayer, hideGraylayer);
+  for (_j = 0, _len2 = root_divs.length; _j < _len2; _j++) {
+    root_div = root_divs[_j];
     ul = $("<ul>");
     words = words_index[_i];
-    for (_j = 0, _len2 = words.length; _j < _len2; _j++) {
-      word = words[_j];
+    for (_k = 0, _len3 = words.length; _k < _len3; _k++) {
+      word = words[_k];
       a = $('<a>').text(word).wrap("<li>").hover(function() {}, function() {});
       ul.append(a.parent());
     }
@@ -408,4 +401,4 @@ letsJQuery = function() {
   }
   return window.flag = 1;
 };
-GM_addStyle('div.base div {\n		background-color: black;\n		border-radius: 8px 8px 8px 8px;\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base a:hover {\n		color: #FFFFFF;\n}\ndiv.base a {\n		color: #BFBFBF;\n}\ndiv.base ul {\n		padding: 10px;\n}\n#trev a {\n		border-radius: 15px;\n		position: relative;					/*for tooltip */\n    /* line-height: 30px; */\n    margin-right: 10px;\n    padding: 5px 15px;\n}\n#trev a:hover {\n		background-color: #FFFFFF;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
+GM_addStyle('div.base div {\n		background-color: black;\n		border-radius: 8px 8px 8px 8px;\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n		padding-top: 3px;\n		padding-bottom: 3px;\n		padding-left: 10px;\n		color: #BFBFBF;\n}\ndiv.base li:hover {\n		background-color: rgba(255, 255, 255, 0.1);\n		color: #FFFFFF;\n}\n#trev a {\n		border-radius: 15px;\n		position: relative;					/*for tooltip */\n    /* line-height: 30px; */\n    margin-right: 10px;\n    /* padding: 5px 15px; */\n}\n#trev a:hover {\n		background-color: #FFFFFF;\n		z-index:1001;\n}\ndiv.dummy {\n    top: 0;\n		bottom: 0;\n    left: 0;\n		right: 0;\n    position: absolute;\n    z-index: 1001;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
