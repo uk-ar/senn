@@ -1,3 +1,4 @@
+
 // ==UserScript==
 // @name           senn
 // @namespace      http://hoge
@@ -10,7 +11,7 @@
 console.log = unsafeWindow.console.log;
 p = console.log;
 letsJQuery = function() {
-  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, inverted_index, li, num, otherKeyword, paragraphs, post_data, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex, words_index, _fn, _ref;
+  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, li, num, otherKeyword, paragraphs, post_data, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex, _fn, _ref;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -324,23 +325,29 @@ letsJQuery = function() {
     all_urls: $X(siteinfo['paragraph']).map(get_url)
   });
   window.Minibuffer.status('Preload2', 'Preloading2...');
+  root_divs = paragraphs.parent();
   D.xhttp.post_j(api_url + "/preload2", post_data).next(function(response) {
-    var ret;
+    var inverted_index, keyword, ret, root_div, word, words, words_index, _i, _j, _len, _len2;
     ret = JSON.parse(response.responseText);
     console.log(ret);
     console.log("post f");
     console.log(ret.status);
     window.Minibuffer.status('Preload2', "Preloading2... " + ret.status + ".", 3000);
+    words_index = ret.words_index;
+    inverted_index = ret.inverted_index;
+    for (_i = 0, _len = root_divs.length; _i < _len; _i++) {
+      root_div = root_divs[_i];
+      ul = $("<ul>");
+      words = words_index[_i];
+      for (_j = 0, _len2 = words.length; _j < _len2; _j++) {
+        word = words[_j];
+        a = $('<a>').text(word).wrap("<li>").hover(function() {}, function() {});
+        ul.append(a.parent());
+      }
+      keyword = $("div.keywords", root_div);
+      keyword.prepend(ul);
+    }
   });
-  root_divs = paragraphs.parent();
-  words_index = [["W3C", "タグ", "ルビ"], ["Add-ons", "Firefox", "ルビ"], ["W3C3", "タグ", "ルビ"], ["W3C4", "タグ", "ルビ"], ["W3C5", "タグ", "ルビ"], ["W3C6", "タグ", "ルビ"], ["W3C7", "タグ", "ルビ"], ["W3C8", "タグ", "ルビ"], ["W3C9", "タグ", "ルビ"], ["W3C10", "タグ", "ルビ"]];
-  inverted_index = {
-    "ruby on rails": [0, 2],
-    "ruby 入門": [1],
-    "W3C": [0],
-    "タグ": [0, 2],
-    "ルビ": [0, 1, 2]
-  };
   otherKeyword = $('#trev').parent().addClass('dummy-parent');
   otherKeyword.prepend($('<div class="dummy">'));
   otherKeyword.hover(function(e) {
