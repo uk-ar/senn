@@ -1,38 +1,16 @@
-
 // ==UserScript==
 // @name           senn
 // @namespace      http://hoge
 // @include        https://*
 // @include        http://*
 // @include        http://*
+// @resource       jquery    http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js
 // ==/UserScript==
-;var GM_wait, jQuery, letsJQuery;
+;var GM_wait, i, jQuery, letsJQuery, p, waitMinibuffer;
 console.log = unsafeWindow.console.log;
-unsafeWindow.Minibuffer = window.Minibuffer;
-unsafeWindow.LDRize = window.LDRize;
-jQuery = 0;
-GM_wait = function() {
-  if (typeof unsafeWindow.jQuery === 'undefined') {
-    return window.setTimeout(GM_wait, 100);
-  } else {
-    jQuery = unsafeWindow.jQuery.noConflict(true);
-    return letsJQuery();
-  }
-};
-(function() {
-  var GM_Head, GM_JQ;
-  if (typeof unsafeWindow.jQuery === 'undefined') {
-    GM_Head = document.getElementsByTagName('head')[0] || document.documentElement;
-    GM_JQ = document.createElement('script');
-    GM_JQ.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js';
-    GM_JQ.type = 'text/javascript';
-    GM_JQ.async = true;
-    GM_Head.insertBefore(GM_JQ, GM_Head.firstChild);
-  }
-  return GM_wait();
-})();
+p = console.log;
 letsJQuery = function() {
-  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, keyword, li, otherKeywords, paragraphs, post_data, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex, _i, _len;
+  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, inverted_index, li, num, otherKeyword, paragraphs, post_data, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex, words_index, _fn, _ref;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -45,6 +23,12 @@ letsJQuery = function() {
     "ruby on rails": [0, 2],
     "ruby 入門": [1]
   };
+  graylayer = $("<div>").attr({
+    "id": "graylayer"
+  }).css({
+    "z-index": grayZindex
+  });
+  $("body").append(graylayer);
   showKeywords = function(context) {
     $("div.keywords", context).stop(true, true).animate({
       "width": "show"
@@ -80,24 +64,13 @@ letsJQuery = function() {
       return $("div.bar", context).hide();
     }
   };
-  otherKeywords = $('#trev a');
-  graylayer = $("#graylayer");
   showGraylayer = function() {
-    var id;
-    id = graylayer.data('timer');
-    console.log("ct" + id);
-    clearTimeout(id);
     console.log("showGray");
-    graylayer.stop(true, true).fadeIn(speed);
+    return graylayer.stop(true, true).fadeIn(speed);
   };
   hideGraylayer = function(callback) {
-    var id;
-    graylayer.data('timer', setTimeout(function() {
-      console.log("hideGray");
-      graylayer.stop(true, true).fadeOut(speed);
-    }, 500));
-    id = graylayer.data('timer');
-    return console.log("st" + id);
+    console.log("hideGray");
+    return graylayer.stop(true, true).fadeOut(speed);
   };
   genShow = function(indexes) {
     this.indexes = indexes;
@@ -185,8 +158,6 @@ letsJQuery = function() {
     });
     return console.groupEnd("hideP");
   };
-  $("div.bar").remove();
-  $("div.base").remove();
   barWidth = 30;
   $(paragraphs).each(function() {
     var bar, base, check, height, keywords, li, paragraph, select, ul, wrapdiv;
@@ -201,13 +172,9 @@ letsJQuery = function() {
     paragraph.wrap(wrapdiv);
     wrapdiv = paragraph.parent();
     base = $('<div>').attr("class", "base").css({
-      "position": "absolute",
       "z-index": baseZindex + 3,
       "height": height,
-      "margin-left": -barWidth,
-      "opacity": 0.8
-    }).css({
-      "background-color": "red"
+      "margin-left": -barWidth
     });
     wrapdiv.prepend(base);
     bar = $('<div>').attr("class", "bar").css({
@@ -218,7 +185,6 @@ letsJQuery = function() {
     check = $('<input type="checkbox"/>').attr({
       "position": "absolute"
     });
-    bar.append(check);
     select = $('<div>').attr("class", "select").text("この文書を").css({
       "height": height
     });
@@ -244,6 +210,7 @@ letsJQuery = function() {
     ul.append(li);
     select.append(ul);
     base.append(select);
+    base.append($('<div class="line">'));
     keywords = $('<div>').attr("class", "keywords").css({
       "height": height,
       "width": 100
@@ -256,19 +223,12 @@ letsJQuery = function() {
       "z-index": baseZindex + 1
     });
   });
-  $("#graylayer").remove();
-  $("body").append($("<div>").attr({
-    "id": "graylayer"
-  }).css({
-    "z-index": grayZindex
-  }));
   $(paragraphs).css({
     "z-index": baseZindex,
     "position": "relative",
     "border-radius": 8,
     "background-color": "white"
   });
-  $("#tooltip").remove();
   ul = $("<ul>").css({
     "padding": 10,
     "background-color": "blue",
@@ -308,7 +268,6 @@ letsJQuery = function() {
   showTooltip = function(e) {
     var that;
     console.debug("showTooltip");
-    graylayer = $("#graylayer");
     that = this;
     return graylayer.queue(function() {
       console.debug("act1:showTooltip");
@@ -332,16 +291,15 @@ letsJQuery = function() {
   $("a:eq(1)", $("div.keywords").first()).css({
     "position": "relative"
   }).hover(showTooltip, hideTooltip);
-  $(otherKeywords[0]).hover(showTooltip, hideTooltip);
-  $(otherKeywords[1]).hover(showTooltip, hideTooltip);
-  $(paragraphs[0]).mouseenter();
-  $("div.bar:eq(0)").show();
-  $("div.select:eq(0)").show();
-  $("div.keywords:eq(0)").show();
-  $(paragraphs[1]).mouseenter();
-  $("div.bar:eq(1)").show();
-  $("div.select:eq(1)").show();
-  $("div.keywords:eq(1)").show();
+  p(paragraphs.length);
+  _fn = function(num) {};
+  for (num = 0, _ref = paragraphs.length; 0 <= _ref ? num <= _ref : num >= _ref; 0 <= _ref ? num++ : num--) {
+    _fn(num);
+    $(paragraphs[num]).mouseenter();
+    $("div.bar:eq(" + num + ")").show();
+    $("div.select:eq(" + num + ")").show();
+    $("div.keywords:eq(" + num + ")").show();
+  }
   D = window.Minibuffer.D();
   api_url = "http://localhost:3000/api";
   D.xhttp.post_j = function(url, data) {
@@ -355,46 +313,79 @@ letsJQuery = function() {
     });
   };
   get_url = function(node) {
-    var _ref;
-    return (_ref = $X(siteinfo['link'], node)) != null ? _ref[0].href : void 0;
+    var link;
+    link = $X(siteinfo['link'], node);
+    if (link.length === 0) {
+      return;
+    }
+    return link[0].href;
   };
   post_data = JSON.stringify({
     all_urls: $X(siteinfo['paragraph']).map(get_url)
   });
   window.Minibuffer.status('Preload2', 'Preloading2...');
   D.xhttp.post_j(api_url + "/preload2", post_data).next(function(response) {
-    var i, inverted_index, keyword, ret, root_div, word, words, words_index, _i, _len, _len2;
+    var ret;
     ret = JSON.parse(response.responseText);
     console.log(ret);
+    console.log("post f");
+    console.log(ret.status);
     window.Minibuffer.status('Preload2', "Preloading2... " + ret.status + ".", 3000);
-    words_index = ret.words_index;
-    inverted_index = ret.inverted_index;
-    for (i = 0, _len = root_divs.length; i < _len; i++) {
-      root_div = root_divs[i];
-      ul = $("<ul>");
-      words = words_index[i];
-      for (_i = 0, _len2 = words.length; _i < _len2; _i++) {
-        word = words[_i];
-        a = $('<a>').text(word).wrap("<li>").mouseover(function() {
-          word = $(this).text();
-          console.log(word);
-          console.log(inverted_index[word]);
-        }).mouseout(function() {});
-        ul.append(a.parent());
-      }
-      keyword = $("div.keywords", root_div);
-      keyword.prepend(ul);
-    }
   });
   root_divs = paragraphs.parent();
-  for (_i = 0, _len = otherKeywords.length; _i < _len; _i++) {
-    keyword = otherKeywords[_i];
-    $(keyword).prepend($("<div>").attr({
-      "class": "dummy"
-    }));
-  }
-  console.log($("div.dummy"));
-  $("div.dummy").hover(showGraylayer, hideGraylayer);
-  return window.flag = 1;
+  words_index = [["W3C", "タグ", "ルビ"], ["Add-ons", "Firefox", "ルビ"], ["W3C3", "タグ", "ルビ"], ["W3C4", "タグ", "ルビ"], ["W3C5", "タグ", "ルビ"], ["W3C6", "タグ", "ルビ"], ["W3C7", "タグ", "ルビ"], ["W3C8", "タグ", "ルビ"], ["W3C9", "タグ", "ルビ"], ["W3C10", "タグ", "ルビ"]];
+  inverted_index = {
+    "ruby on rails": [0, 2],
+    "ruby 入門": [1],
+    "W3C": [0],
+    "タグ": [0, 2],
+    "ルビ": [0, 1, 2]
+  };
+  otherKeyword = $('#trev').parent().addClass('dummy-parent');
+  otherKeyword.prepend($('<div class="dummy">'));
+  otherKeyword.hover(function(e) {
+    return showGraylayer();
+  }, function() {
+    return hideGraylayer();
+  });
+  otherKeyword.delegate('a', 'hover', function(e) {
+    if (e.type === 'mouseenter') {
+      return p("in", $(this).text());
+    } else {
+      return p("out", $(this).text());
+    }
+  });
+  window.flag = 1;
+  return p("hogehoge5");
 };
-GM_addStyle('div.base div {\n		background-color: black;\n		border-radius: 8px 8px 8px 8px;\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n		padding-top: 3px;\n		padding-bottom: 3px;\n		padding-left: 10px;\n		color: #BFBFBF;\n}\ndiv.base li:hover {\n		background-color: rgba(255, 255, 255, 0.1);\n		color: #FFFFFF;\n}\n#trev a {\n		border-radius: 15px;\n		position: relative;					/*for tooltip */\n    /* line-height: 30px; */\n    margin-right: 10px;\n    /* padding: 5px 15px; */\n}\n#trev a:hover {\n		background-color: #FFFFFF;\n		z-index:1001;\n}\ndiv.dummy {\n    top: 0;\n		bottom: 0;\n    left: 0;\n		right: 0;\n    position: absolute;\n    z-index: 1001;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
+GM_addStyle('div.base {\n		position:absolute;\n		/* opacity:0.7; */\n		background-color:rgba(0, 0, 0, 0.7);/* black; */\n		border-radius: 8px 0px 0px 8px;\n}\ndiv.base:hover {\n		border-radius: 8px 8px 8px 8px;\n}\ndiv.line{\n		border-left: 1px solid white;\n    /* display: block; */\n    height: 114px;\n}\ndiv.base div {\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n	  padding-bottom: 3px;\n    padding-left: 10px;\n    padding-top: 3px;\n		color: #BFBFBF;\n}\ndiv.base li:hover {\n		background-color: rgba(255, 255, 255, 0.1);\n		color: #FFFFFF;\n}\ndiv.dummy-parent {\n		position:relative;\n		z-index: 1002;							/* with gray */\n}/* dummy-parent */\ndiv.dummy {\n    top: -5px;\n		bottom: -5px;\n    left: -8px;\n		right: -7px;\n    position: absolute;\n		background-color: white;\n		z-index: -1;\n		border-radius: 15px;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
+jQuery = 0;
+GM_wait = function() {
+  if (typeof unsafeWindow.jQuery === 'undefined') {
+    return window.setTimeout(GM_wait, 100);
+  } else {
+    jQuery = unsafeWindow.jQuery.noConflict(true);
+    return waitMinibuffer();
+  }
+};
+i = 4;
+waitMinibuffer = function() {
+  if (window.Minibuffer && window.Minibuffer.addCommand && window.LDRize && window.LDRize.getSiteinfo) {
+    return letsJQuery();
+  } else if (i-- > 0) {
+    return setTimeout(arguments.callee, 500);
+  }
+};
+(function() {
+  var $, GM_Head, GM_JQ;
+  if (typeof unsafeWindow.jQuery === 'undefined') {
+    GM_Head = document.getElementsByTagName('head')[0] || document.documentElement;
+    GM_JQ = document.createElement('script');
+    GM_JQ.type = 'text/javascript';
+    GM_JQ.async = true;
+    GM_JQ.innerHTML = GM_getResourceText('jquery');
+    GM_Head.appendChild(GM_JQ);
+    $ = unsafeWindow.$;
+  }
+  return GM_wait();
+})();

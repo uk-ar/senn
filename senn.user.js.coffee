@@ -6,32 +6,14 @@
 // @include        https://*
 // @include        http://*
 // @include        http://*
+// @resource       jquery    http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js
 // ==/UserScript==
 `
 #for debug
 console.log = unsafeWindow.console.log
-unsafeWindow.Minibuffer = window.Minibuffer
-unsafeWindow.LDRize = window.LDRize
-
-jQuery = 0
-
-# Check if jQuery's loaded
-GM_wait = ->
-  if (typeof unsafeWindow.jQuery == 'undefined')
-    window.setTimeout(GM_wait, 100);
-  else
-    jQuery = unsafeWindow.jQuery.noConflict(true);
-    letsJQuery();
-
-do ->
-  if (typeof unsafeWindow.jQuery == 'undefined')
-    GM_Head = document.getElementsByTagName('head')[0] || document.documentElement
-    GM_JQ = document.createElement('script');
-    GM_JQ.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js';
-    GM_JQ.type = 'text/javascript';
-    GM_JQ.async = true;
-    GM_Head.insertBefore(GM_JQ, GM_Head.firstChild);
-  GM_wait();
+p = console.log
+# unsafeWindow.Minibuffer = window.Minibuffer
+# unsafeWindow.LDRize = window.LDRize
 
 # All your GM code must be inside this function
 letsJQuery = ->
@@ -44,31 +26,31 @@ letsJQuery = ->
   baseZindex = 1000
   grayZindex = 1000
   speed="fast"
+
   wordsIndex ={"ruby on rails":[0,2],"ruby 入門":[1]}
 
-  #wordsIndex["hoge"]
+  graylayer = $("<div>").attr("id":"graylayer").css("z-index":grayZindex)
+
+  $("body").append graylayer
 
   showKeywords = (context) ->
     $("div.keywords", context).stop(true, true)
     .animate({"width":"show"},speed)#:not(:animated)
     #console.debug("showKeywords")
     $("div.base").css("left":"0","right":"0","width":"")#console.log(
+
   hideKeywords = (context) ->
     #console.debug("hideKeywords")
     $("div.keywords", context)
     .animate {"width":"hide"},speed,"swing",->
       $("div.base").css("left":"","right":"","width":barWidth)#not to move to graylayer
+
   showBar = (context) ->
     #console.debug("showBar")
-    # keywords = $("div.keywords", context)
-    # if keywords.is(":animated")
-    #   keywords.queue ->
-    #     $("div.bar",context).show()
-    # else
     $("div.bar",context).show()
+
   hideBar = (context)->
     #console.debug("hideBar")
-    #hideGraylayer ->:animated
     keywords = $("div.keywords", context)
     if keywords.is(":animated")
       keywords.queue ->
@@ -76,30 +58,13 @@ letsJQuery = ->
     else
       $("div.bar",context).hide()
 
-  otherKeywords=$('#trev a')
-  graylayer = $("#graylayer")
-  #otherKeywordsZindex = otherKeywords.css("z-index")
-  #console.log otherKeywordsZindex
   showGraylayer = ->
-    id = graylayer.data 'timer'
-    console.log("ct#{id}")
-    clearTimeout id
     console.log("showGray")
-    #otherKeywords.css("z-index":grayZindex + 1)#.animate({"z-index":grayZindex + 1}, 0)
     graylayer.stop(true,true).fadeIn(speed)
-    return
+
   hideGraylayer = (callback) ->
-    #http://stackoverflow.com/questions/3329197/jquery-delay-or-timeout-with-stop
-    graylayer.data 'timer', setTimeout ->
-      console.log("hideGray")
-      graylayer.stop(true,true).fadeOut(speed)
-      #otherKeywords.css("z-index":otherKeywordsZindex)
-      #, callback
-      return
-      #
-    , 500
-    id = graylayer.data 'timer'
-    console.log("st#{id}")
+    console.log("hideGray")
+    graylayer.stop(true,true).fadeOut(speed)
 
   genShow = (indexes) ->
     @indexes = indexes
@@ -110,12 +75,9 @@ letsJQuery = ->
       for index in indexes
         do (index) ->
           console.info(index)
-          $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")#
-      #console.log($(paragraphs).parent().find($(this).parents()).last().css("z-index":baseZindex+1,"background-color":""))#.find()
+          $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")
       console.info($(this))
       showGraylayer()
-      #$("div.base").css("left":0,"right":0,"width":"")
-      #$(this).css("z-index":baseZindex+5)#,"position":"relative")#for other keyword
 
   genHide = (indexes) ->
     @indexes = indexes
@@ -153,21 +115,21 @@ letsJQuery = ->
           console.warn("hi" + index)
           $(paragraphs[index]).css("z-index":baseZindex)
     console.groupEnd("hideP")
-    #.css("background-color":"")
 
-  ####
-  $("div.bar").remove()
-  $("div.base").remove()
   ####
   barWidth=30
   $(paragraphs).each ->
     ####
     paragraph = $(this)
-    paragraph.unwrap() if window.flag?
-    ####
-    height = paragraph.height()#attr("scrollHeight")
 
-    wrapdiv = $("<div>").css("position":"relative")#.css("background-color":"red")#.css("z-index":1,#.css("z-index":baseZindex+2)
+    #for debug
+    paragraph.unwrap() if window.flag?
+
+    ####
+    height = paragraph.height()
+
+    wrapdiv = $("<div>").css("position":"relative")
+
     paragraph.wrap(wrapdiv)
     wrapdiv=paragraph.parent()
     # wrapdiv.hover ->
@@ -176,7 +138,7 @@ letsJQuery = ->
     #   hideBar(paragraph)
 
     base = $('<div>').attr("class","base")
-      .css("position":"absolute","z-index":baseZindex+3,"height":height,"margin-left":-barWidth,"opacity":0.8).css("background-color":"red")
+      .css("z-index":baseZindex+3,"height":height,"margin-left":-barWidth)
     wrapdiv.prepend(base)
 
     bar = $('<div>').attr("class","bar")
@@ -185,15 +147,16 @@ letsJQuery = ->
 
     check = $('<input type="checkbox"/>').attr("position":"absolute")
     # because cannot change type
-    bar.append(check)
+    # p "app", bar.append(check)
+    # p bar
 
     select = $('<div>').attr("class","select").text("この文書を")
       .css("height":height)
     ul=$("<ul>").css("padding":10, "border-radius":3, "list-style-type":"none")#"background-color":"blue",
-    li=$('<a>').text("含む").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#.css("color":"white", "float":"right")
+    li=$('<a>').text("含む").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#"float":"right".css("color":"white")
   #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
-    #check = $('<input type="checkbox"/>').attr( "position":"absolute")
-    #li.prepend(check)
+    # check = $('<input type="checkbox"/>').attr( "position":"absolute")
+    # li.prepend(check)
     ul.append(li)
 
     li=$('<a>').text("除外する").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
@@ -203,28 +166,16 @@ letsJQuery = ->
 
     select.append(ul)
     base.append(select)
+    base.append(
+      $('<div class="line">'))
+      #.css("height":height, "margin":))
+		#margin:8px 10px;
 
     keywords = $('<div>').attr("class","keywords")
       .css("height":height,"width":100)#"position":"absolute","top":0
 
-    #bar.append(keywords)
     base.append(keywords)
 
-    # ul=$("<ul>")
-    # #for word in ["ruby on rails","ruby 入門"]
-    # for word in ["W3C","タグ", "ルビ"]
-    #   a=$('<a>').text(word)
-    #     .attr("href":"http://www.google.co.jp/").wrap("<li>").hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
-    #   # a.hover ->showParagraphs(a),
-    #   # -> hideParagraphs(a)
-    #   ul.append(a.parent())
-    # keywords.prepend(ul)
-    #base.hover ->
-      #$("div.bar:not(:animated)",this).show()
-      #showBar(this)
-    #,->
-      #$("div.bar:not(:animated)",this).hide()
-      #hideBar(this)
     select.hide()
     bar.hide()
     keywords.hide()
@@ -234,32 +185,9 @@ letsJQuery = ->
     #   hideKeywords(paragraph.parent())
     paragraph.css("z-index":baseZindex+1)
 
-  ####
-  # $X = window.Minibuffer.$X;
-  # $N = window.Minibuffer.$N;
-  # $ = jQuery;
-
-  # siteinfo = window.LDRize.getSiteinfo();
-  # paragraphs = $X siteinfo['paragraph']
-  # baseZindex = 1000
-  $("#graylayer").remove()
-  ####
-  # position fixed because scroll
-  $("body").append(
-    $("<div>").attr("id":"graylayer")
-    .css("z-index":grayZindex)
-    #.css("background":"black","z-index":baseZindex,"opacity":0.5,"position":"fixed","top":0,"left":0,"height":"100%","width":"100%","display":"none")
-    )
   # position relative because z-index
   $(paragraphs).css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
 
-  #otherKeywords=$('#trev a')#.css("position":"relative","border-radius":3,"background-color":"white")
-  #$(otherKeywords[0]).hover showGraylayer, hideGraylayer
-  # genShow([0, 3]), genHide([0, 3])
-  #$(otherKeywords[1]).hover showGraylayer, hideGraylayer
-  #.hover genShow([1]), genHide([1])
-  ####
-  $("#tooltip").remove()
   ####
   ul=$("<ul>").css("padding":10, "background-color":"blue","border-radius":3, "list-style-type":"none")
   li=$('<a>').text("include").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>").parent()
@@ -290,7 +218,6 @@ letsJQuery = ->
   tooltip = $("div#tooltip")
   showTooltip = (e)->
     console.debug("showTooltip")
-    graylayer = $("#graylayer")
     #if graylayer.is(":animated")
     that = this
     graylayer.queue -># => cannot works well
@@ -313,20 +240,14 @@ letsJQuery = ->
   $("a:eq(1)", $("div.keywords").first()).css("position":"relative").hover showTooltip
   , hideTooltip
 
-  $(otherKeywords[0]).hover showTooltip
-  , hideTooltip
-  $(otherKeywords[1]).hover showTooltip
-  , hideTooltip
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
-  $(paragraphs[0]).mouseenter()
-  $("div.bar:eq(0)").show()
-  $("div.select:eq(0)").show()
-  $("div.keywords:eq(0)").show()
-
-  $(paragraphs[1]).mouseenter()
-  $("div.bar:eq(1)").show()
-  $("div.select:eq(1)").show()
-  $("div.keywords:eq(1)").show()
+  p paragraphs.length
+  for num in [0..paragraphs.length]
+    do (num) ->
+    $(paragraphs[num]).mouseenter()
+    $("div.bar:eq(#{num})").show()
+    $("div.select:eq(#{num})").show()
+    $("div.keywords:eq(#{num})").show()
 
   D = window.Minibuffer.D();
   api_url = "http://localhost:3000/api"
@@ -339,7 +260,9 @@ letsJQuery = ->
     #, 0
 
   get_url = (node) ->
-    $X(siteinfo['link'], node)?[0].href
+    link = $X(siteinfo['link'], node)
+    return if link.length == 0
+    link[0].href
 
   post_data = JSON.stringify {
     all_urls: $X(siteinfo['paragraph']).map(get_url)}
@@ -350,93 +273,125 @@ letsJQuery = ->
   .next (response) ->
     ret = JSON.parse(response.responseText);
     console.log(ret);
+    console.log("post f");
+    console.log(ret.status);
     window.Minibuffer.status(
       'Preload2', "Preloading2... #{ret.status}.", 3000) # + count
-    words_index = ret.words_index
-    inverted_index = ret.inverted_index
-    for root_div, i in root_divs
-      ul=$("<ul>")
-      words = words_index[i]
-      for word in words #["W3C","タグ", "ルビ"]
-        #console.log(word)
-        #that = this
-        a=$('<a>').text(word).wrap("<li>")
-        .mouseover ->
-          word = $(this).text()
-          console.log(word)
-          console.log(inverted_index[word])
-          return
-        .mouseout ->
-          #console.log(this)
-          return
-        #.hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
-        # a.hover ->showParagraphs(a),
-        # -> hideParagraphs(a)
-        ul.append(a.parent())
-      keyword = $("div.keywords", root_div)
-      keyword.prepend(ul)
     return #for deferred
   #.next () ->
 
   root_divs = paragraphs.parent()
+  words_index = [
+    ["W3C","タグ", "ルビ"],
+    ["Add-ons", "Firefox", "ルビ"],
+    ["W3C3","タグ", "ルビ"],
+    ["W3C4","タグ", "ルビ"],
+    ["W3C5","タグ", "ルビ"],
+    ["W3C6","タグ", "ルビ"],
+    ["W3C7","タグ", "ルビ"],
+    ["W3C8","タグ", "ルビ"],
+    ["W3C9","タグ", "ルビ"],
+    ["W3C10","タグ", "ルビ"],
+  ]
+  inverted_index = {
+    "ruby on rails":[0,2],
+    "ruby 入門":[1],
+    "W3C":[0],
+    "タグ":[0, 2],
+    "ルビ":[0, 1, 2],
+    }
 
-  #console.log(otherKeywords)
-  for keyword in otherKeywords
-    #console.log($(keyword))
-    $(keyword).prepend(
-      $("<div>").attr("class":"dummy")
-      )
-  console.log $("div.dummy")
-  $("div.dummy").hover showGraylayer, hideGraylayer
+  otherKeyword = $('#trev').parent().addClass('dummy-parent')
+  otherKeyword.prepend(
+    $('<div class="dummy">'))
 
+  #otherKeywords = $('a', otherKeyword)
+
+  otherKeyword.hover (e) ->
+    showGraylayer()
+  , ->
+    hideGraylayer()
+  #$(e.target)
+  #http://stackoverflow.com/questions/4772287/does-jquery-have-a-handleout-for-delegatehover
+  otherKeyword.delegate 'a', 'hover', (e) ->
+    if e.type == 'mouseenter'
+      p "in" , $(this).text()
+    else
+      p "out" , $(this).text()
+
+  # for keyword in otherKeywords
+  #   $(keyword).prepend(
+  #     $('<div class="dummy">'))
+
+  # for root_div in root_divs
+  #   ul=$("<ul>")
+  #   #for word in ["ruby on rails","ruby 入門"]
+  #   words = words_index[_i]
+  #   for word in words #["W3C","タグ", "ルビ"]
+  #     #console.log(this)
+  #     #that = this
+  #     a=$('<a>').text(word).wrap("<li>")
+  #     .hover  ->
+  #       #console.log(that)
+  #       #console.log(this)
+  #       return
+  #     , ->
+  #       #console.log(this)
+  #       return
+  #     #.hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
+  #     # a.hover ->showParagraphs(a),
+  #     # -> hideParagraphs(a)
+  #     ul.append(a.parent())
+  #   keyword = $("div.keywords", root_div)
+  #   keyword.prepend(ul)
   ####
   window.flag=1
+  #showGraylayer()
+  p "hogehoge5"
 #)
-  # $X = window.Minibuffer.$X;
-  # $N = window.Minibuffer.$N;
-  # $ = jQuery;
-  # #$ = window.jQuery;
-  # siteinfo = window.LDRize.getSiteinfo();
-  # paragraphs = $($X(siteinfo['paragraph']))
-  # root_divs = paragraphs.parent()
-  # baseZindex = 1000
-  # speed="fast"
 
 GM_addStyle('''
-div.base div {
-		background-color: black;
+div.base {
+		position:absolute;
+		/* opacity:0.7; */
+		background-color:rgba(0, 0, 0, 0.7);/* black; */
+		border-radius: 8px 0px 0px 8px;
+}
+div.base:hover {
 		border-radius: 8px 8px 8px 8px;
+}
+div.line{
+		border-left: 1px solid white;
+    /* display: block; */
+    height: 114px;
+}
+div.base div {
 		float: left;
 		color: white;								/* for explain text */
 }
 div.base li {
-		padding-top: 3px;
-		padding-bottom: 3px;
-		padding-left: 10px;
+	  padding-bottom: 3px;
+    padding-left: 10px;
+    padding-top: 3px;
 		color: #BFBFBF;
 }
 div.base li:hover {
 		background-color: rgba(255, 255, 255, 0.1);
 		color: #FFFFFF;
 }
-#trev a {
-		border-radius: 15px;
-		position: relative;					/*for tooltip */
-    /* line-height: 30px; */
-    margin-right: 10px;
-    /* padding: 5px 15px; */
-}
-#trev a:hover {
-		background-color: #FFFFFF;
-		z-index:1001;
-}
+div.dummy-parent {
+		position:relative;
+		z-index: 1002;							/* with gray */
+}/* dummy-parent */
 div.dummy {
-    top: 0;
-		bottom: 0;
-    left: 0;
-		right: 0;
+    top: -5px;
+		bottom: -5px;
+    left: -8px;
+		right: -7px;
     position: absolute;
-    z-index: 1001;
+		background-color: white;
+		z-index: -1;
+		border-radius: 15px;
 }
 #graylayer {
 		background-color:black;
@@ -449,9 +404,41 @@ div.dummy {
 		display: none;
 }
 ''')
+jQuery = 0
+
+# Check if jQuery's loaded
+GM_wait = ->
+  if (typeof unsafeWindow.jQuery == 'undefined')
+    window.setTimeout(GM_wait, 100);
+  else
+    jQuery = unsafeWindow.jQuery.noConflict(true);
+    waitMinibuffer()
+
+#http://coderepos.org/share/browser/lang/javascript/userscripts/minibufferbookmarkcommand.user.js
+i = 4
+waitMinibuffer = ->
+  if(window.Minibuffer && window.Minibuffer.addCommand &&
+  window.LDRize && window.LDRize.getSiteinfo)
+    letsJQuery()
+  else if i-- > 0
+    setTimeout(arguments.callee, 500)
+
+do ->
+  if (typeof unsafeWindow.jQuery == 'undefined')
+    GM_Head = document.getElementsByTagName('head')[0] || document.documentElement
+    GM_JQ = document.createElement('script');
+    GM_JQ.type = 'text/javascript';
+    GM_JQ.async = true;
+    #GM_JQ.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js';
+    #GM_Head.insertBefore(GM_JQ, GM_Head.firstChild);
+    GM_JQ.innerHTML = GM_getResourceText('jquery')
+    GM_Head.appendChild(GM_JQ);
+    $ = unsafeWindow.$;
+  GM_wait();
+
 #console.log("aa")
 #bug strange overlay keyword suggest
 
 # Local Variables:
-# mode: coffee-css-mumamo
+# mode: coffee
 # End:
