@@ -172,7 +172,7 @@ letsJQuery = ->
 		#margin:8px 10px;
 
     keywords = $('<div>').attr("class","keywords")
-      .css("height":height,"width":100)#"position":"absolute","top":0
+      .css("height":height,"width":500)#"position":"absolute","top":0
 
     base.append(keywords)
 
@@ -282,13 +282,16 @@ letsJQuery = ->
     words_index = ret.words_index
     inverted_index = ret.inverted_index
     for root_div in root_divs
-      ul=$("<ul>")
+      #ul=$("<ul>")
       #for word in ["ruby on rails","ruby 入門"]
+      #
+      keyword = $("div.keywords", root_div)
       words = words_index[_i]
+      p words
       for word in words #["W3C","タグ", "ルビ"]
         #console.log(this)
         #that = this
-        a=$('<a>').text(word).wrap("<li>")
+        a=$('<a>').text(word)#.wrap("<li>")
         .hover  ->
           #console.log(that)
           #console.log(this)
@@ -299,9 +302,9 @@ letsJQuery = ->
         #.hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
         # a.hover ->showParagraphs(a),
         # -> hideParagraphs(a)
-        ul.append(a.parent())
-      keyword = $("div.keywords", root_div)
-      keyword.prepend(ul)
+        #ul.append(a.parent())
+        keyword.prepend(a)
+      #keyword.prepend(ul)
     return #for deferred
   #.next () ->
 
@@ -395,6 +398,12 @@ div.dummy {
 		background-color: white;
 		z-index: -1;
 		border-radius: 15px;
+}
+div.keywords {
+		font-size: small;
+}
+div.keywords a{
+		margin-right: 10px;
 }
 #graylayer {
 		background-color:black;

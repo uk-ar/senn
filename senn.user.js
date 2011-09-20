@@ -214,7 +214,7 @@ letsJQuery = function() {
     base.append($('<div class="line">'));
     keywords = $('<div>').attr("class", "keywords").css({
       "height": height,
-      "width": 100
+      "width": 500
     });
     base.append(keywords);
     select.hide();
@@ -337,15 +337,14 @@ letsJQuery = function() {
     inverted_index = ret.inverted_index;
     for (_i = 0, _len = root_divs.length; _i < _len; _i++) {
       root_div = root_divs[_i];
-      ul = $("<ul>");
+      keyword = $("div.keywords", root_div);
       words = words_index[_i];
+      p(words);
       for (_j = 0, _len2 = words.length; _j < _len2; _j++) {
         word = words[_j];
-        a = $('<a>').text(word).wrap("<li>").hover(function() {}, function() {});
-        ul.append(a.parent());
+        a = $('<a>').text(word).hover(function() {}, function() {});
+        keyword.prepend(a);
       }
-      keyword = $("div.keywords", root_div);
-      keyword.prepend(ul);
     }
   });
   otherKeyword = $('#trev').parent().addClass('dummy-parent');
@@ -365,7 +364,7 @@ letsJQuery = function() {
   window.flag = 1;
   return p("hogehoge5");
 };
-GM_addStyle('div.base {\n		position:absolute;\n		/* opacity:0.7; */\n		background-color:rgba(0, 0, 0, 0.7);/* black; */\n		border-radius: 8px 0px 0px 8px;\n}\ndiv.base:hover {\n		border-radius: 8px 8px 8px 8px;\n}\ndiv.line{\n		border-left: 1px solid white;\n    /* display: block; */\n    height: 114px;\n}\ndiv.base div {\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n	  padding-bottom: 3px;\n    padding-left: 10px;\n    padding-top: 3px;\n		color: #BFBFBF;\n}\ndiv.base li:hover {\n		background-color: rgba(255, 255, 255, 0.1);\n		color: #FFFFFF;\n}\ndiv.dummy-parent {\n		position:relative;\n		z-index: 1002;							/* with gray */\n}/* dummy-parent */\ndiv.dummy {\n    top: -5px;\n		bottom: -5px;\n    left: -8px;\n		right: -7px;\n    position: absolute;\n		background-color: white;\n		z-index: -1;\n		border-radius: 15px;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
+GM_addStyle('div.base {\n		position:absolute;\n		/* opacity:0.7; */\n		background-color:rgba(0, 0, 0, 0.7);/* black; */\n		border-radius: 8px 0px 0px 8px;\n}\ndiv.base:hover {\n		border-radius: 8px 8px 8px 8px;\n}\ndiv.line{\n		border-left: 1px solid white;\n    /* display: block; */\n    height: 114px;\n}\ndiv.base div {\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n	  padding-bottom: 3px;\n    padding-left: 10px;\n    padding-top: 3px;\n		color: #BFBFBF;\n}\ndiv.base li:hover {\n		background-color: rgba(255, 255, 255, 0.1);\n		color: #FFFFFF;\n}\ndiv.dummy-parent {\n		position:relative;\n		z-index: 1002;							/* with gray */\n}/* dummy-parent */\ndiv.dummy {\n    top: -5px;\n		bottom: -5px;\n    left: -8px;\n		right: -7px;\n    position: absolute;\n		background-color: white;\n		z-index: -1;\n		border-radius: 15px;\n}\ndiv.keywords {\n		font-size: small;\n}\ndiv.keywords a{\n		margin-right: 10px;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
 jQuery = 0;
 GM_wait = function() {
   if (typeof unsafeWindow.jQuery === 'undefined') {
