@@ -152,8 +152,8 @@ letsJQuery = ->
     base.append(select)
 
     select.delegate 'a', 'click', (e) ->
-      p $('a', select)#.removeClass("active")
-      $(this).addClass("active")
+      p $('a', select).parent().removeClass("active")
+      $(this).parent().addClass("active")
 
 
     lineMargin = 10
@@ -163,13 +163,14 @@ letsJQuery = ->
     )
 		#margin:8px 10px;
 
-    keywords = $('<div class="keywords">')
-      .css("width":500)
+    keywords = $('<div class="keywords">').css("width":500).
+      append($('<div class="include active">')).append($('<div class="exclude">'))
     base.append(keywords)
 
     select.hide()
     bar.hide()
     keywords.hide()
+
     # bar.hover ->
     #   showKeywords(paragraph.parent())
     # ,->
@@ -266,36 +267,35 @@ letsJQuery = ->
   .next (response) ->
     ret = JSON.parse(response.responseText);
     console.log(ret);
-    console.log("post f");
     console.log(ret.status);
     window.Minibuffer.status(
       'Preload2', "Preloading2... #{ret.status}.", 3000) # + count
     words_index = ret.words_index
     inverted_index = ret.inverted_index
     for root_div in root_divs
-      #ul=$("<ul>")
-      #for word in ["ruby on rails","ruby 入門"]
-      #
-      keyword = $("div.keywords", root_div)
+      include_keyword = $("div.include", root_div)
+      exclude_keyword = $("div.exclude", root_div)
       words = words_index[_i]
-      p words
-      for word in words #["W3C","タグ", "ルビ"]
-        #console.log(this)
-        #that = this
-        a=$('<a>').text(word)#.wrap("<li>")
-        .hover  ->
-          #console.log(that)
-          #console.log(this)
-          return
-        , ->
-          #console.log(this)
-          return
-        #.hover(genShow(wordsIndex[word]), genHide(wordsIndex[word]))#.mouseover(genShow(wordsIndex[word])).mouseout(genHide(wordsIndex[word]))
-        # a.hover ->showParagraphs(a),
-        # -> hideParagraphs(a)
-        #ul.append(a.parent())
-        keyword.prepend(a)
-      #keyword.prepend(ul)
+
+      # negate = (words) ->
+      #   for word in words
+      #     if word[0] == "-"
+      #        ret = word.slice(1, word.length)
+      #     else
+      #        ret = "-#{word}"
+      #     ret
+      # p negate(words)
+
+      for word in words
+        a=$('<a>').text(word)
+        include_keyword.prepend(a)
+        if word[0] == "-"
+          word = word.slice(1, word.length)
+        else
+          word = "-#{word}"
+        b=$('<a>').text(word)
+        exclude_keyword.prepend(b)
+
     return #for deferred
   #.next () ->
 
@@ -382,6 +382,7 @@ div.base li:hover {
 div.select{
 		color: white;
 		float: right;
+		font-size: small;
 }
 div.select ul{
 		padding: 10px 10px 10px 0;
