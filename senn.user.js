@@ -185,10 +185,6 @@ letsJQuery = function() {
     base.append(bar);
     select = $('<div class="select"></div>').append($('<ul>この文書を</ul>').append($('<li class="active"><a>含む</a></li>')).append($('<li><a>除外する</a></li>')));
     base.append(select);
-    select.delegate('a', 'click', function(e) {
-      p($('a', select).parent().removeClass("active"));
-      return $(this).parent().addClass("active");
-    });
     lineMargin = 10;
     base.append($('<div class="line">').css({
       "height": height - 2 * lineMargin,
@@ -198,6 +194,13 @@ letsJQuery = function() {
       "width": 400
     }).append($('<div class="include active">')).append($('<div class="exclude">'));
     base.append(keywords);
+    keywords.delegate('a', 'click', function(e) {
+      return e.stopPropagation();
+    });
+    base.delegate('a', 'click', function(e) {
+      $('a', select).parent().toggleClass("active");
+      return $('a', keywords).parent().toggleClass("active");
+    });
     select.hide();
     bar.hide();
     keywords.hide();
@@ -347,7 +350,7 @@ letsJQuery = function() {
   window.flag = 1;
   return p("hogehoge5");
 };
-GM_addStyle('div.base {\n		position:absolute;\n		/* opacity:0.7; */\n		background-color:rgba(0, 0, 0, 0.7);/* black; */\n		border-radius: 8px 0px 0px 8px;\n}\ndiv.base:hover {\n		border-radius: 8px 8px 8px 8px;\n}\ndiv.base a {\n		cursor: pointer;\n}\ndiv.base div {\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n    border-radius: 15px 15px 15px 15px;\n	  padding-bottom: 3px;\n    padding-left: 10px;\n    padding-top: 3px;\n		color: #BFBFBF;\n}\ndiv.base li.active {\n		background-color: rgba(0, 0, 0, 0.8);\n		color: white;\n}\ndiv.base li:hover {\n		/* background-color: rgba(255, 255, 255, 0.1); */\n		color: #FFFFFF;\n}\ndiv.select{\n		color: white;\n		float: right;\n		font-size: small;\n}\ndiv.select ul{\n		padding: 10px 10px 10px 0;\n		/* border-radius: 3px 3px 3px 3px; */\n		list-style-type: none;			/* for not dotted */\n}\ndiv.line{\n		border-left: 1px solid white;\n		/* border-right-width: 10px; */\n}\ndiv.keywords {\n		font-size: medium;\n		padding: 10px;\n}\ndiv.keywords a{\n		margin-right: 10px;\n		text-decoration: underline;\n}\ndiv.dummy-parent {\n		position:relative;\n		z-index: 1002;							/* with gray */\n}/* dummy-parent */\ndiv.dummy {\n    top: -5px;\n		bottom: -5px;\n    left: -8px;\n		right: -7px;\n    position: absolute;\n		background-color: white;\n		z-index: -1;\n		border-radius: 15px;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
+GM_addStyle('div.base {\n		position:absolute;\n		/* opacity:0.7; */\n		background-color:rgba(0, 0, 0, 0.7);/* black; */\n		border-radius: 8px 0px 0px 8px;\n}\ndiv.base:hover {\n		border-radius: 8px 8px 8px 8px;\n}\ndiv.base a {\n		cursor: pointer;\n}\ndiv.base div {\n		float: left;\n		color: white;								/* for explain text */\n}\ndiv.base li {\n    border-radius: 15px 15px 15px 15px;\n	  padding-bottom: 3px;\n    padding-left: 10px;\n    padding-top: 3px;\n		color: #BFBFBF;\n}\ndiv.base li.active {\n		background-color: rgba(0, 0, 0, 0.8);\n		color: white;\n}\ndiv.base li:hover {\n		/* background-color: rgba(255, 255, 255, 0.1); */\n		color: #FFFFFF;\n}\ndiv.select{\n		color: white;\n		float: right;\n		font-size: small;\n}\ndiv.select ul{\n		padding: 10px 10px 10px 0;\n		/* border-radius: 3px 3px 3px 3px; */\n		list-style-type: none;			/* for not dotted */\n}\ndiv.line{\n		border-left: 1px solid white;\n		/* border-right-width: 10px; */\n}\ndiv.keywords {\n		font-size: medium;\n		padding: 10px;\n}\ndiv.keywords a{\n		margin-right: 10px;\n		text-decoration: underline;\n}\ndiv.keywords div.active{\n		display: block;\n}\ndiv.include {\n		display: none;\n}\ndiv.exclude {\n		display: none;\n}\n\ndiv.dummy-parent {\n		position:relative;\n		z-index: 1002;							/* with gray */\n}/* dummy-parent */\ndiv.dummy {\n    top: -5px;\n		bottom: -5px;\n    left: -8px;\n		right: -7px;\n    position: absolute;\n		background-color: white;\n		z-index: -1;\n		border-radius: 15px;\n}\n#graylayer {\n		background-color:black;\n    opacity: 0.5;\n    position: fixed;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n		display: none;\n}');
 jQuery = 0;
 GM_wait = function() {
   if (typeof unsafeWindow.jQuery === 'undefined') {

@@ -151,11 +151,6 @@ letsJQuery = ->
         .append($('<li><a>除外する</a></li>')))
     base.append(select)
 
-    select.delegate 'a', 'click', (e) ->
-      p $('a', select).parent().removeClass("active")
-      $(this).parent().addClass("active")
-
-
     lineMargin = 10
     base.append(
       $('<div class="line">')
@@ -166,6 +161,15 @@ letsJQuery = ->
     keywords = $('<div class="keywords">').css("width":400).
       append($('<div class="include active">')).append($('<div class="exclude">'))
     base.append(keywords)
+    keywords.delegate 'a', 'click', (e) ->
+      e.stopPropagation()
+
+    base.delegate 'a', 'click', (e) ->
+      $('a', select).parent().toggleClass("active")
+      $('a', keywords).parent().toggleClass("active")
+
+      # p $('a', select).parent().removeClass("active")
+      # $(this).parent().addClass("active")
 
     select.hide()
     bar.hide()
@@ -401,6 +405,16 @@ div.keywords a{
 		margin-right: 10px;
 		text-decoration: underline;
 }
+div.keywords div.active{
+		display: block;
+}
+div.include {
+		display: none;
+}
+div.exclude {
+		display: none;
+}
+
 div.dummy-parent {
 		position:relative;
 		z-index: 1002;							/* with gray */
