@@ -11,12 +11,14 @@
 console.log = unsafeWindow.console.log;
 p = console.log;
 letsJQuery = function() {
-  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, li, num, otherKeyword, paragraphs, post_data, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex, _fn, _ref;
+  var $, $N, $X, D, a, api_url, barWidth, baseZindex, genHide, genShow, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, hideTooltip, li, num, otherKeyword, paragraphs, post_data, query, query_box, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, showTooltip, siteinfo, speed, tooltip, ul, wordsIndex, _fn, _ref;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
   siteinfo = window.LDRize.getSiteinfo();
   paragraphs = $($X(siteinfo['paragraph']));
+  query_box = $($X(siteinfo['focus'] || '//input[@type="text" or not(@type)]')[0]);
+  query = query_box.attr("value");
   baseZindex = 1000;
   grayZindex = 1000;
   speed = "fast";
@@ -24,9 +26,7 @@ letsJQuery = function() {
     "ruby on rails": [0, 2],
     "ruby 入門": [1]
   };
-  graylayer = $("<div>").attr({
-    "id": "graylayer"
-  }).css({
+  graylayer = $('<div id="graylayer">').css({
     "z-index": grayZindex
   });
   $("body").append(graylayer);
@@ -159,6 +159,12 @@ letsJQuery = function() {
     });
     return console.groupEnd("hideP");
   };
+  if (GM_getValue("from_url") === document.referrer) {
+    console.log("a");
+    query_box.css({
+      "background": "#fff8c1"
+    });
+  }
   barWidth = 30;
   $(paragraphs).each(function() {
     var bar, base, height, keywords, lineMargin, paragraph, select, wrapdiv;
@@ -195,7 +201,14 @@ letsJQuery = function() {
     }).append($('<div class="include active">')).append($('<div class="exclude">'));
     base.append(keywords);
     keywords.delegate('a', 'click', function(e) {
-      return e.stopPropagation();
+      query_box.attr({
+        "value": "" + query + " " + ($(this).text())
+      });
+      e.stopPropagation();
+      return setTimeout(function() {
+        GM_setValue("from_url", location.href);
+        return query_box[0].form.submit();
+      }, 0);
     });
     base.delegate('a', 'click', function(e) {
       $('a', select).parent().toggleClass("active");
@@ -288,6 +301,7 @@ letsJQuery = function() {
       method: "post",
       url: url,
       data: data,
+      query: query,
       headers: {
         "Content-Type": "application/json; charset = utf-8"
       }

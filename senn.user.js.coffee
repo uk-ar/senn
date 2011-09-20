@@ -23,15 +23,18 @@ letsJQuery = ->
   #$ = window.jQuery;
   siteinfo = window.LDRize.getSiteinfo();
   paragraphs = $($X(siteinfo['paragraph']))
+  query_box = $($X(siteinfo['focus'] ||
+  	'//input[@type="text" or not(@type)]')[0])
+  query = query_box.attr("value")
   baseZindex = 1000
   grayZindex = 1000
   speed="fast"
 
   wordsIndex ={"ruby on rails":[0,2],"ruby 入門":[1]}
 
-  graylayer = $("<div>").attr("id":"graylayer").css("z-index":grayZindex)
-
-  $("body").append graylayer
+  graylayer = $('<div id="graylayer">').css("z-index":grayZindex)
+  $("body").
+    append(graylayer)
 
   showKeywords = (context) ->
     $("div.keywords", context).stop(true, true)
@@ -116,6 +119,10 @@ letsJQuery = ->
           $(paragraphs[index]).css("z-index":baseZindex)
     console.groupEnd("hideP")
 
+  if GM_getValue("from_url") == document.referrer
+    console.log("a")
+    query_box.css("background":"#fff8c1")#!important
+
   ####
   barWidth=30
   $(paragraphs).each ->
@@ -162,14 +169,19 @@ letsJQuery = ->
       append($('<div class="include active">')).append($('<div class="exclude">'))
     base.append(keywords)
     keywords.delegate 'a', 'click', (e) ->
+      query_box.attr("value":"#{query} #{$(this).text()}")
       e.stopPropagation()
+      # for gm_xmlhttprequest security limitation
+      # http://wiki.greasespot.net/Greasemonkey_access_violation
+      setTimeout ->
+        GM_setValue("from_url", location.href)
+        query_box[0].form.submit()
+      , 0
 
     base.delegate 'a', 'click', (e) ->
       $('a', select).parent().toggleClass("active")
       $('a', keywords).parent().toggleClass("active")
 
-      # p $('a', select).parent().removeClass("active")
-      # $(this).parent().addClass("active")
 
     select.hide()
     bar.hide()
@@ -247,13 +259,12 @@ letsJQuery = ->
 
   D = window.Minibuffer.D();
   api_url = "http://localhost:3000/api"
-  # for gm_xmlhttprequest security limitation http://wiki.greasespot.net/Greasemonkey_access_violation
+
+  # main
   D.xhttp.post_j = (url, data) ->
-      #setTimeout ->
     return D.xhttp {
-      method:"post", url:url, data:data,
+      method:"post", url:url, data:data, query:query
       headers:{"Content-Type":"application/json; charset = utf-8"}}
-    #, 0
 
   get_url = (node) ->
     link = $X(siteinfo['link'], node)
