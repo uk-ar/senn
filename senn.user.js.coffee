@@ -163,7 +163,7 @@ letsJQuery = ->
     )
 		#margin:8px 10px;
 
-    keywords = $('<div class="keywords">').css("width":500).
+    keywords = $('<div class="keywords">').css("width":400).
       append($('<div class="include active">')).append($('<div class="exclude">'))
     base.append(keywords)
 

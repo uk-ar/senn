@@ -1,3 +1,4 @@
+
 // ==UserScript==
 // @name           senn
 // @namespace      http://hoge
@@ -194,7 +195,7 @@ letsJQuery = function() {
       "margin-top": lineMargin
     }));
     keywords = $('<div class="keywords">').css({
-      "width": 500
+      "width": 400
     }).append($('<div class="include active">')).append($('<div class="exclude">'));
     base.append(keywords);
     select.hide();
