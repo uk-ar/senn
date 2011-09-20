@@ -137,43 +137,34 @@ letsJQuery = ->
     # ,->
     #   hideBar(paragraph)
 
-    base = $('<div>').attr("class","base")
+    base = $('<div class="base">')
       .css("z-index":baseZindex+3,"height":height,"margin-left":-barWidth)
     wrapdiv.prepend(base)
 
-    bar = $('<div>').attr("class","bar")
+    bar = $('<div class="bar"><input type="checkbox"/>')
       .css("width":barWidth,"height":height)
     base.append(bar)
 
-    check = $('<input type="checkbox"/>').attr("position":"absolute")
-    # because cannot change type
-    # p "app", bar.append(check)
-    # p bar
-
-    select = $('<div>').attr("class","select").text("この文書を")
-      .css("height":height)
-    ul=$("<ul>").css("padding":10, "border-radius":3, "list-style-type":"none")#"background-color":"blue",
-    li=$('<a>').text("含む").attr("href":"http://www.google.co.jp/").wrap("<li>").parent()#"float":"right".css("color":"white")
-  #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
-    # check = $('<input type="checkbox"/>').attr( "position":"absolute")
-    # li.prepend(check)
-    ul.append(li)
-
-    li=$('<a>').text("除外する").attr("href":"http://www.google.co.jp/").css("color":"white", "float":"right").wrap("<li>").parent()
-    check = $('<input type="checkbox"/>').attr("position":"absolute")
-    li.prepend(check)
-    ul.append(li)
-
-    select.append(ul)
+    select = $('<div class="select"></div>')
+      .append($('<ul>この文書を</ul>')#<input type="checkbox"/>
+        .append($('<li class="active"><a>含む</a></li>'))
+        .append($('<li><a>除外する</a></li>')))
     base.append(select)
+
+    select.delegate 'a', 'click', (e) ->
+      p $('a', select)#.removeClass("active")
+      $(this).addClass("active")
+
+
+    lineMargin = 10
     base.append(
-      $('<div class="line">'))
-      #.css("height":height, "margin":))
+      $('<div class="line">')
+      .css("height":height-2*lineMargin, "margin-top":lineMargin)
+    )
 		#margin:8px 10px;
 
-    keywords = $('<div>').attr("class","keywords")
-      .css("height":height,"width":500)#"position":"absolute","top":0
-
+    keywords = $('<div class="keywords">')
+      .css("width":500)
     base.append(keywords)
 
     select.hide()
@@ -190,10 +181,10 @@ letsJQuery = ->
 
   ####
   ul=$("<ul>").css("padding":10, "background-color":"blue","border-radius":3, "list-style-type":"none")
-  li=$('<a>').text("include").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>").parent()
+  li=$('<a>').text("include").css("color":"white").wrap("<li>").parent()
   #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
   ul.append(li)
-  a=$('<a>').text("exclude").attr("href":"http://www.google.co.jp/").css("color":"white").wrap("<li>")
+  a=$('<a>').text("exclude").css("color":"white").wrap("<li>")
   .hover (e) ->
     link = $(e.target).parents("a").first()
     word = link[0].firstChild.data
@@ -366,24 +357,48 @@ div.base {
 div.base:hover {
 		border-radius: 8px 8px 8px 8px;
 }
-div.line{
-		border-left: 1px solid white;
-    /* display: block; */
-    height: 114px;
+div.base a {
+		cursor: pointer;
 }
 div.base div {
 		float: left;
 		color: white;								/* for explain text */
 }
 div.base li {
+    border-radius: 15px 15px 15px 15px;
 	  padding-bottom: 3px;
     padding-left: 10px;
     padding-top: 3px;
 		color: #BFBFBF;
 }
+div.base li.active {
+		background-color: rgba(0, 0, 0, 0.8);
+		color: white;
+}
 div.base li:hover {
-		background-color: rgba(255, 255, 255, 0.1);
+		/* background-color: rgba(255, 255, 255, 0.1); */
 		color: #FFFFFF;
+}
+div.select{
+		color: white;
+		float: right;
+}
+div.select ul{
+		padding: 10px 10px 10px 0;
+		/* border-radius: 3px 3px 3px 3px; */
+		list-style-type: none;			/* for not dotted */
+}
+div.line{
+		border-left: 1px solid white;
+		/* border-right-width: 10px; */
+}
+div.keywords {
+		font-size: medium;
+		padding: 10px;
+}
+div.keywords a{
+		margin-right: 10px;
+		text-decoration: underline;
 }
 div.dummy-parent {
 		position:relative;
@@ -398,12 +413,6 @@ div.dummy {
 		background-color: white;
 		z-index: -1;
 		border-radius: 15px;
-}
-div.keywords {
-		font-size: small;
-}
-div.keywords a{
-		margin-right: 10px;
 }
 #graylayer {
 		background-color:black;
