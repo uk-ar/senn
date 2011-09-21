@@ -31,11 +31,25 @@ letsJQuery = ->
   grayZindex = 1000
   speed="fast"
 
+  D = window.Minibuffer.D();
+  api_url = "http://localhost:3000/api"
+
   graylayer = $('<div id="graylayer">').css("z-index":grayZindex)
   $("body").
     append(graylayer)
 
   #### functions
+
+  post = (path, data) ->
+    return D.xhttp {
+      method:"post", url:api_url + path, data:data, query:query
+      headers:{"Content-Type":"application/json; charset = utf-8"}}
+
+  get_url = (node) ->
+    link = $X(siteinfo['link'], node)
+    return if link.length == 0
+    link[0].href
+
   showKeywords = (context) ->
     $("div.keywords", context).stop(true, true)
     .animate({"width":"show"},speed)#:not(:animated)
@@ -62,14 +76,12 @@ letsJQuery = ->
       $("div.bar",context).hide()
 
   showGraylayer = ->
-    console.log("showGray")
     graylayer.stop(true,true).fadeIn(speed)
 
   hideGraylayer = (callback) ->
-    console.log("hideGray")
     graylayer.stop(true,true).fadeOut(speed)
 
-  wordsIndex ={"speed test":[0,2],"win high speed":[1], "東京":[0], "名古屋":[1]}
+  wordsIndex ={"speed test":[0,2],"win high speed":[1], "東京":[0], "名古屋":[1], "goo speed":[10, 11], "usen speed":[11]}
 
   showParagraphs = (word) ->
     index = wordsIndex[word]||[]
@@ -118,6 +130,10 @@ letsJQuery = ->
       .css("width":barWidth)#,"height":height)
     base.append(bar)
 
+    base.delegate 'input', 'click', (e) ->
+      paragraph.toggleClass("gm_ldrize_pinned")
+      send()
+
     select = $('<div class="select"></div>')
       .append($('<ul>この文書を</ul>')#<input type="checkbox"/>
         .append($('<li class="active"><a>含む</a></li>'))
@@ -132,7 +148,8 @@ letsJQuery = ->
 		#margin:8px 10px;
 
     keywords = $('<div class="keywords">').css("width":400).
-      append($('<div class="include active">')).append($('<div class="exclude">'))
+      append($('<div class="include active">')).
+      append($('<div class="exclude">'))
     base.append(keywords)
     keywords.delegate 'a', 'click', (e) ->
       query_box.attr("value":"#{query} #{$(this).text()}")
@@ -155,6 +172,7 @@ letsJQuery = ->
       #e.stopPropagation()
 
     base.delegate 'a', 'click', (e) ->
+      p 'clicked'
       $('a', select).parent().toggleClass("active")
       $('a', keywords).parent().toggleClass("active")
 
@@ -168,40 +186,25 @@ letsJQuery = ->
     #   hideKeywords(paragraph.parent())
     #paragraph.css("z-index":baseZindex+1)
 
-  # position relative because z-index
-  #$(paragraphs).css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
-
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
-
-  for num in [0..1]#paragraphs.length]
+  for num in [0..paragraphs.length]
     do (num) ->
     $(paragraphs[num]).mouseenter()
     $("div.bar:eq(#{num})").show()
     $("div.select:eq(#{num})").show()
     $("div.keywords:eq(#{num})").show()
 
-  D = window.Minibuffer.D();
-  api_url = "http://localhost:3000/api"
-
   # main
-  D.xhttp.post_j = (url, data) ->
-    return D.xhttp {
-      method:"post", url:url, data:data, query:query
-      headers:{"Content-Type":"application/json; charset = utf-8"}}
-
-  get_url = (node) ->
-    link = $X(siteinfo['link'], node)
-    return if link.length == 0
-    link[0].href
-
   post_data = JSON.stringify {
-    all_urls: $X(siteinfo['paragraph']).map(get_url)}
+    all_urls: $X(siteinfo['paragraph']).map(get_url)
+    #query:query
+    #related_queries:related_queries
+    }
 
   window.Minibuffer.status('Preload2', 'Preloading2...')# + count
+  root_divs = paragraphs
 
-  root_divs = paragraphs.parent()
-
-  D.xhttp.post_j(api_url + "/preload2", post_data)
+  post("/preload2", post_data)
   .next (response) ->
     ret = JSON.parse(response.responseText);
     console.log(ret);
@@ -210,27 +213,27 @@ letsJQuery = ->
       'Preload2', "Preloading2... #{ret.status}.", 3000) # + count
     words_index = ret.words_index
     inverted_index = ret.inverted_index
+    p root_divs
     for root_div in root_divs
+      p root_div
       include_keyword = $("div.include", root_div)
       exclude_keyword = $("div.exclude", root_div)
       words = words_index[_i]
-
       # negate = (words) ->
       #   for word in words
-      #     if word[0] == "-"
-      #        ret = word.slice(1, word.length)
+      #     if word[0]=="-"
+      #       word.slice(1,word.length)
       #     else
-      #        ret = "-#{word}"
-      #     ret
-      # p negate(words)
-
+      #       "-#{word}"
+      #p negate(["-1","1","-1","1"])
+      p words
       for word in words
         a=$('<a>').text(word)
         include_keyword.prepend(a)
-        if word[0] == "-"
-          word = word.slice(1, word.length)
-        else
-          word = "-#{word}"
+        # if word[0] == "-"
+        #   word = word.slice(1, word.length)
+        # else
+        #   word = "-#{word}"
         b=$('<a>').text(word)
         exclude_keyword.prepend(b)
 
@@ -261,13 +264,10 @@ letsJQuery = ->
   otherKeyword.prepend(
     $('<div class="dummy">').css("z-index":-1))
 
-  #otherKeywords = $('a', otherKeyword)
-
   otherKeyword.hover (e) ->
     showGraylayer()
   , ->
     hideGraylayer()
-  #$(e.target)
   #http://stackoverflow.com/questions/4772287/does-jquery-have-a-handleout-for-delegatehover
   otherKeyword.delegate 'a', 'hover', (e) ->
     if e.type == 'mouseenter'
@@ -275,9 +275,19 @@ letsJQuery = ->
     else
       hideParagraphs($(this).text())
 
-  # for keyword in otherKeywords
-  #   $(keyword).prepend(
-  #     $('<div class="dummy">'))
+  p relatedKeyword = $('#brs').parent().addClass('dummy-parent')
+  relatedKeyword.prepend(
+    $('<div class="dummy">').css("z-index":-1))
+  relatedKeyword.hover (e) ->
+    showGraylayer()
+  , ->
+    hideGraylayer()
+  #http://stackoverflow.com/questions/4772287/does-jquery-have-a-handleout-for-delegatehover
+  relatedKeyword.delegate 'a', 'hover', (e) ->
+    if e.type == 'mouseenter'
+      showParagraphs($(this).text())
+    else
+      hideParagraphs($(this).text())
 
   ####
   window.flag=1

@@ -1,4 +1,3 @@
-
 // ==UserScript==
 // @name           senn
 // @namespace      http://hoge
@@ -11,7 +10,7 @@
 console.log = unsafeWindow.console.log;
 p = console.log;
 letsJQuery = function() {
-  var $, $N, $X, D, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, num, otherKeyword, paragraphs, post_data, query, query_box, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, wordsIndex, _fn;
+  var $, $N, $X, D, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, num, otherKeyword, paragraphs, post, post_data, query, query_box, relatedKeyword, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, wordsIndex, _fn, _ref;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -22,10 +21,31 @@ letsJQuery = function() {
   baseZindex = 1000;
   grayZindex = 1000;
   speed = "fast";
+  D = window.Minibuffer.D();
+  api_url = "http://localhost:3000/api";
   graylayer = $('<div id="graylayer">').css({
     "z-index": grayZindex
   });
   $("body").append(graylayer);
+  post = function(path, data) {
+    return D.xhttp({
+      method: "post",
+      url: api_url + path,
+      data: data,
+      query: query,
+      headers: {
+        "Content-Type": "application/json; charset = utf-8"
+      }
+    });
+  };
+  get_url = function(node) {
+    var link;
+    link = $X(siteinfo['link'], node);
+    if (link.length === 0) {
+      return;
+    }
+    return link[0].href;
+  };
   showKeywords = function(context) {
     $("div.keywords", context).stop(true, true).animate({
       "width": "show"
@@ -62,18 +82,18 @@ letsJQuery = function() {
     }
   };
   showGraylayer = function() {
-    console.log("showGray");
     return graylayer.stop(true, true).fadeIn(speed);
   };
   hideGraylayer = function(callback) {
-    console.log("hideGray");
     return graylayer.stop(true, true).fadeOut(speed);
   };
   wordsIndex = {
     "speed test": [0, 2],
     "win high speed": [1],
     "東京": [0],
-    "名古屋": [1]
+    "名古屋": [1],
+    "goo speed": [10, 11],
+    "usen speed": [11]
   };
   showParagraphs = function(word) {
     var i, index, _i, _len, _results;
@@ -130,6 +150,10 @@ letsJQuery = function() {
       "width": barWidth
     });
     base.append(bar);
+    base.delegate('input', 'click', function(e) {
+      paragraph.toggleClass("gm_ldrize_pinned");
+      return send();
+    });
     select = $('<div class="select"></div>').append($('<ul>この文書を</ul>').append($('<li class="active"><a>含む</a></li>')).append($('<li><a>除外する</a></li>')));
     base.append(select);
     lineMargin = 10;
@@ -164,6 +188,7 @@ letsJQuery = function() {
       return hideGraylayer();
     });
     base.delegate('a', 'click', function(e) {
+      p('clicked');
       $('a', select).parent().toggleClass("active");
       return $('a', keywords).parent().toggleClass("active");
     });
@@ -172,40 +197,19 @@ letsJQuery = function() {
     return keywords.hide();
   });
   _fn = function(num) {};
-  for (num = 0; num <= 1; num++) {
+  for (num = 0, _ref = paragraphs.length; 0 <= _ref ? num <= _ref : num >= _ref; 0 <= _ref ? num++ : num--) {
     _fn(num);
     $(paragraphs[num]).mouseenter();
     $("div.bar:eq(" + num + ")").show();
     $("div.select:eq(" + num + ")").show();
     $("div.keywords:eq(" + num + ")").show();
   }
-  D = window.Minibuffer.D();
-  api_url = "http://localhost:3000/api";
-  D.xhttp.post_j = function(url, data) {
-    return D.xhttp({
-      method: "post",
-      url: url,
-      data: data,
-      query: query,
-      headers: {
-        "Content-Type": "application/json; charset = utf-8"
-      }
-    });
-  };
-  get_url = function(node) {
-    var link;
-    link = $X(siteinfo['link'], node);
-    if (link.length === 0) {
-      return;
-    }
-    return link[0].href;
-  };
   post_data = JSON.stringify({
     all_urls: $X(siteinfo['paragraph']).map(get_url)
   });
   window.Minibuffer.status('Preload2', 'Preloading2...');
-  root_divs = paragraphs.parent();
-  D.xhttp.post_j(api_url + "/preload2", post_data).next(function(response) {
+  root_divs = paragraphs;
+  post("/preload2", post_data).next(function(response) {
     var a, b, exclude_keyword, include_keyword, inverted_index, ret, root_div, word, words, words_index, _i, _j, _len, _len2;
     ret = JSON.parse(response.responseText);
     console.log(ret);
@@ -213,20 +217,18 @@ letsJQuery = function() {
     window.Minibuffer.status('Preload2', "Preloading2... " + ret.status + ".", 3000);
     words_index = ret.words_index;
     inverted_index = ret.inverted_index;
+    p(root_divs);
     for (_i = 0, _len = root_divs.length; _i < _len; _i++) {
       root_div = root_divs[_i];
+      p(root_div);
       include_keyword = $("div.include", root_div);
       exclude_keyword = $("div.exclude", root_div);
       words = words_index[_i];
+      p(words);
       for (_j = 0, _len2 = words.length; _j < _len2; _j++) {
         word = words[_j];
         a = $('<a>').text(word);
         include_keyword.prepend(a);
-        if (word[0] === "-") {
-          word = word.slice(1, word.length);
-        } else {
-          word = "-" + word;
-        }
         b = $('<a>').text(word);
         exclude_keyword.prepend(b);
       }
@@ -242,6 +244,22 @@ letsJQuery = function() {
     return hideGraylayer();
   });
   otherKeyword.delegate('a', 'hover', function(e) {
+    if (e.type === 'mouseenter') {
+      return showParagraphs($(this).text());
+    } else {
+      return hideParagraphs($(this).text());
+    }
+  });
+  p(relatedKeyword = $('#brs').parent().addClass('dummy-parent'));
+  relatedKeyword.prepend($('<div class="dummy">').css({
+    "z-index": -1
+  }));
+  relatedKeyword.hover(function(e) {
+    return showGraylayer();
+  }, function() {
+    return hideGraylayer();
+  });
+  relatedKeyword.delegate('a', 'hover', function(e) {
     if (e.type === 'mouseenter') {
       return showParagraphs($(this).text());
     } else {
