@@ -229,6 +229,9 @@ letsJQuery = function() {
   _fn = function(num) {};
   for (num = 0, _ref = paragraphs.length; 0 <= _ref ? num <= _ref : num >= _ref; 0 <= _ref ? num++ : num--) {
     _fn(num);
+    $(paragraphs[num]).mouseenter();
+    $("div.bar:eq(" + num + ")").show();
+    $("div.main:eq(" + num + ")").show();
   }
   window.Minibuffer.status('Preload2', 'Preloading2...');
   root_divs = paragraphs;

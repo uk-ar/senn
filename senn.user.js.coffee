@@ -221,8 +221,9 @@ letsJQuery = ->
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
   for num in [0..paragraphs.length]
     do (num) ->
-    # $(paragraphs[num]).mouseenter()
-    # $("div.bar:eq(#{num})")#.show()
+    $(paragraphs[num]).mouseenter()
+    $("div.bar:eq(#{num})").show()
+    $("div.main:eq(#{num})").show()
     # $("div.select:eq(#{num})").show()
     # $("div.keywords:eq(#{num})").show()
 
