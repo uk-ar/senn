@@ -17,6 +17,7 @@ p = console.log
 
 # All your GM code must be inside this function
 letsJQuery = ->
+  #### variables
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -30,12 +31,11 @@ letsJQuery = ->
   grayZindex = 1000
   speed="fast"
 
-  wordsIndex ={"ruby on rails":[0,2],"ruby 入門":[1]}
-
   graylayer = $('<div id="graylayer">').css("z-index":grayZindex)
   $("body").
     append(graylayer)
 
+  #### functions
   showKeywords = (context) ->
     $("div.keywords", context).stop(true, true)
     .animate({"width":"show"},speed)#:not(:animated)
@@ -69,61 +69,24 @@ letsJQuery = ->
     console.log("hideGray")
     graylayer.stop(true,true).fadeOut(speed)
 
-  genShow = (indexes) ->
-    @indexes = indexes
-    ->
-      console.debug("genShow")
-      index2 = wordsIndex[$(this).text()]
-      console.info(index2)
-      for index in indexes
-        do (index) ->
-          console.info(index)
-          $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")
-      console.info($(this))
-      showGraylayer()
-
-  genHide = (indexes) ->
-    @indexes = indexes
-    ->
-      console.debug("genHide")
-      index2 = wordsIndex[$(this).text()]
-      console.info(index2)
-      #$(this).css("z-index":baseZindex)#for other keyword
-      hideGraylayer ->
-        for index in indexes
-          do (index) ->
-            $(paragraphs[index]).css("z-index":baseZindex)#.css("background-color":"")
+  wordsIndex ={"speed test":[0,2],"win high speed":[1], "東京":[0], "名古屋":[1]}
 
   showParagraphs = (word) ->
-    console.group("showP")
-    #console.warn(word)
-    index2 = wordsIndex[word]#$.text() combied children
-    console.warn(index2)
-    for index in index2
-      do (index) ->
-        console.warn("sh" + index)
-        $(paragraphs[index]).css("z-index":baseZindex+1).css("background-color":"white")
-    showGraylayer()
-    console.groupEnd("showP")
-      #$(e.target).css("z-index":baseZindex+5)#for other keyword
-  hideParagraphs = (word) ->
-    console.group("hideP")
-    #console.warn(word)
-    index2 = wordsIndex[word]#$.text() combied children
-    console.warn(index2)
-    #$(e.target).css("z-index":baseZindex)#for other keyword
-    hideGraylayer  ->
-      for index in index2
-        do (index) ->
-          console.warn("hi" + index)
-          $(paragraphs[index]).css("z-index":baseZindex)
-    console.groupEnd("hideP")
+    index = wordsIndex[word]||[]
+    for i in index
+      $(paragraphs[i]).css("z-index":baseZindex+1)
+      $("div.dummy", paragraphs[i]).show()
 
+  hideParagraphs = (word) ->
+    index = wordsIndex[word]||[]
+    for i in index
+      $(paragraphs[i]).css("z-index":"")# todo auto?
+      $("div.dummy", paragraphs[i]).hide()
+  ####
   if GM_getValue("from_url") == document.referrer
     console.log("a")
     query_box.css("background":"#fff8c1")#!important
 
-  ####
   barWidth=30
   $(paragraphs).each ->
     ####
@@ -135,17 +98,20 @@ letsJQuery = ->
     ####
     height = paragraph.height()
 
-    wrapdiv = $("<div>").css("position":"relative")
-
-    paragraph.wrap(wrapdiv)
-    wrapdiv=paragraph.parent()
+    #wrapdiv = $("<div>").css("position":"relative")
+    #paragraph.wrap(wrapdiv)
+    #wrapdiv=paragraph.parent()
+    wrapdiv = paragraph
+    wrapdiv.addClass("dummy-parent")
+    paragraph.prepend(
+      $('<div class="dummy">').css("left":-barWidth-8).hide())
     # wrapdiv.hover ->
     #   showBar(paragraph)
     # ,->
     #   hideBar(paragraph)
 
     base = $('<div class="base">')
-      .css("z-index":baseZindex+3,"height":height,"margin-left":-barWidth)
+      .css("z-index":baseZindex+3,"height":height,"left":-barWidth)
     wrapdiv.prepend(base)
 
     bar = $('<div class="bar"><input type="checkbox"/>')
@@ -200,65 +166,14 @@ letsJQuery = ->
     #   showKeywords(paragraph.parent())
     # ,->
     #   hideKeywords(paragraph.parent())
-    paragraph.css("z-index":baseZindex+1)
+    #paragraph.css("z-index":baseZindex+1)
 
   # position relative because z-index
-  $(paragraphs).css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
-
-  ####
-  ul=$("<ul>").css("padding":10, "background-color":"blue","border-radius":3, "list-style-type":"none")
-  li=$('<a>').text("include").css("color":"white").wrap("<li>").parent()
-  #.hover(genShow(obj[1]),genHide(obj[1])).hover(genShow(wordsIndex[word]),genHide(wordsIndex[word]))
-  ul.append(li)
-  a=$('<a>').text("exclude").css("color":"white").wrap("<li>")
-  .hover (e) ->
-    link = $(e.target).parents("a").first()
-    word = link[0].firstChild.data
-    hideParagraphs(word)
-    $("#graylayer").stop(true,true)
-    showParagraphs(word)
-    console.error("show")
-  , ->
-    # link = $(e.target).parents("a").first()
-    # word = link[0].firstChild.data
-    # hideParagraphs(word)
-    # $("#graylayer").stop(true,true)
-    # showParagraphs(word)
-    console.error("hide")
-    #showParagraphs(
-   #.hover(genShow(obj[1]),genHide(obj[1]))
-  ul.append(a.parent())
-
-  ul.wrap("<div>").parent().attr("id":"tooltip").css("position":"relative", "z-index":"1010").show()#.css("background-color":"red")#, "top":200, "left":100).hide()
-  $("body").append(ul.parent())
-  #console.log($("div#tooltip"))
-  tooltip = $("div#tooltip")
-  showTooltip = (e)->
-    console.debug("showTooltip")
-    #if graylayer.is(":animated")
-    that = this
-    graylayer.queue -># => cannot works well
-      console.debug("act1:showTooltip")
-      console.debug(that)
-      tooltip.stop(true,true).css("left":$(that).width(), "top":0, "position":"absolute", "padding-left":10).slideDown(speed)
-      tooltip.appendTo(that)
-      #.css("top":paragraph.offset().top + 20, "left":paragraph.offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":paragraph.width(), "top":paragraph.height()
-    # else
-    #   console.debug("act2:showTooltip")
-    #   tooltip.stop(true,true).css("left":paragraph.width(), "top":0, "position":"absolute", "padding-left":10).fadeIn()#.css("top":paragraph.offset().top + 20, "left":paragraph.offset().left + 10).css("left":0, "top":0, "position":"absolute")"left":paragraph.width(), "top":paragraph.height()
-    #   tooltip.appendTo(this)
-    #console.log(paragraph)
-  hideTooltip = (e)->
-    console.debug("hideTooltip")
-    $("div#tooltip").stop(true,true).slideUp(speed)
-
-  $("a", $("div.keywords").first()).first().css("position":"relative").hover showTooltip
-  , hideTooltip
-  $("a:eq(1)", $("div.keywords").first()).css("position":"relative").hover showTooltip
-  , hideTooltip
+  #$(paragraphs).css("z-index":baseZindex,"position":"relative","border-radius":8,"background-color":"white")#,"z-index":baseZindex+2)
 
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
-  for num in [0..paragraphs.length]
+
+  for num in [0..1]#paragraphs.length]
     do (num) ->
     $(paragraphs[num]).mouseenter()
     $("div.bar:eq(#{num})").show()
@@ -344,7 +259,7 @@ letsJQuery = ->
 
   otherKeyword = $('#trev').parent().addClass('dummy-parent')
   otherKeyword.prepend(
-    $('<div class="dummy">'))
+    $('<div class="dummy">').css("z-index":-1))
 
   #otherKeywords = $('a', otherKeyword)
 
@@ -356,9 +271,9 @@ letsJQuery = ->
   #http://stackoverflow.com/questions/4772287/does-jquery-have-a-handleout-for-delegatehover
   otherKeyword.delegate 'a', 'hover', (e) ->
     if e.type == 'mouseenter'
-      p "in" , $(this).text()
+      showParagraphs($(this).text())
     else
-      p "out" , $(this).text()
+      hideParagraphs($(this).text())
 
   # for keyword in otherKeywords
   #   $(keyword).prepend(
@@ -373,6 +288,9 @@ letsJQuery = ->
 GM_addStyle('''
 div.base {
 		position:absolute;
+		top:0;
+		right:0;
+		bottom:0;
 		/* opacity:0.7; */
 		background-color:rgba(0, 0, 0, 0.7);/* black; */
 		border-radius: 8px 0px 0px 8px;
@@ -434,11 +352,18 @@ div.include {
 div.exclude {
 		display: none;
 }
-
+/* for other keyword */
 div.dummy-parent {
 		position:relative;
 }/* dummy-parent */
 div.dummy-parent:hover {
+		z-index: 1002;							/* with gray */
+}
+/* for paragraph */
+li.dummy-parent {
+		position:relative;
+}/* dummy-parent */
+li.dummy-parent:hover {
 		z-index: 1002;							/* with gray */
 }
 div.dummy {
@@ -448,7 +373,7 @@ div.dummy {
 		right: -7px;
     position: absolute;
 		background-color: white;
-		z-index: -1;
+		z-index: -1;							/* for paragraph.if otherkeyword -1*/
 		border-radius: 15px;
 }
 #graylayer {
