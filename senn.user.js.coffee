@@ -39,16 +39,23 @@ letsJQuery = ->
     append(graylayer)
 
   #### functions
-
-  post = (path, data) ->
-    return D.xhttp {
-      method:"post", url:api_url + path, data:data, query:query
-      headers:{"Content-Type":"application/json; charset = utf-8"}}
-
   get_url = (node) ->
     link = $X(siteinfo['link'], node)
     return if link.length == 0
     link[0].href
+
+  all_urls = $X(siteinfo['paragraph']).map(get_url)
+  post = (path, query, relevant, irrelevant) ->
+    data = JSON.stringify {
+      all_urls: all_urls
+      query:query
+      relevant:relevant
+      irrelevant:irrelevant
+      #related_queries:related_queries
+    }
+    return D.xhttp {
+      method:"post", url:api_url + path, data:data, query:query
+      headers:{"Content-Type":"application/json; charset = utf-8"}}
 
   showKeywords = (context) ->
     $("div.keywords", context).stop(true, true)
@@ -110,32 +117,42 @@ letsJQuery = ->
     ####
     height = paragraph.height()
 
-    #wrapdiv = $("<div>").css("position":"relative")
-    #paragraph.wrap(wrapdiv)
-    #wrapdiv=paragraph.parent()
-    wrapdiv = paragraph
-    wrapdiv.addClass("dummy-parent")
+    paragraph.addClass("dummy-parent")
     paragraph.prepend(
       $('<div class="dummy">').css("left":-barWidth-8).hide())
-    # wrapdiv.hover ->
+    # paragraph.hover ->
     #   showBar(paragraph)
     # ,->
     #   hideBar(paragraph)
 
     base = $('<div class="base">')
-      .css("z-index":baseZindex+3,"height":height,"left":-barWidth)
-    wrapdiv.prepend(base)
+      .css("z-index":baseZindex+3,"left":-barWidth)
+    paragraph.prepend(base)
 
     bar = $('<div class="bar"><input type="checkbox"/>')
-      .css("width":barWidth)#,"height":height)
+      .css("width":barWidth)
     base.append(bar)
 
+    toggleMode = ->
+      $("div.base").toggleClass("active")
+
     base.delegate 'input', 'click', (e) ->
+      before = paragraphs.filter(".gm_ldrize_pinned")
       paragraph.toggleClass("gm_ldrize_pinned")
-      send()
+      after = paragraphs.filter(".gm_ldrize_pinned")
+      toggleMode() if((before.get().length == 0) or (after.get().length == 0))
+      relevant = after.map( ->
+        get_url(this)
+      ).get()
+      irrelevant = paragraphs.filter(":not(.gm_ldrize_pinned)").map( ->
+        get_url(this)
+      ).get()
+      p irrelevant
+      #post("/api2", query, relevant)
+    main = $('<div class="main"></div>')
 
     select = $('<div class="select"></div>')
-      .append($('<ul>この文書を</ul>')#<input type="checkbox"/>
+      .append($('<ul>この文書を</ul>')
         .append($('<li class="active"><a>含む</a></li>'))
         .append($('<li><a>除外する</a></li>')))
     base.append(select)
@@ -145,7 +162,6 @@ letsJQuery = ->
       $('<div class="line">')
       .css("height":height-2*lineMargin, "margin-top":lineMargin)
     )
-		#margin:8px 10px;
 
     keywords = $('<div class="keywords">').css("width":400).
       append($('<div class="include active">')).
@@ -195,12 +211,6 @@ letsJQuery = ->
     $("div.keywords:eq(#{num})").show()
 
   # main
-  post_data = JSON.stringify {
-    all_urls: $X(siteinfo['paragraph']).map(get_url)
-    #query:query
-    #related_queries:related_queries
-    }
-
   window.Minibuffer.status('Preload2', 'Preloading2...')# + count
   root_divs = paragraphs
 
@@ -223,7 +233,7 @@ letsJQuery = ->
         b=$('<a>').text(word)
         exclude_keyword.prepend(b)
 
-  post("/preload2", post_data)
+  post("/preload2")
   .next (response) ->
     ret = JSON.parse(response.responseText);
     console.log(ret);
@@ -235,26 +245,6 @@ letsJQuery = ->
     refreshKeywords(words_index, paragraphs)
     return #for deferred
   #.next () ->
-
-  # words_index = [
-  #   ["W3C","タグ", "ルビ"],
-  #   ["Add-ons", "Firefox", "ルビ"],
-  #   ["W3C3","タグ", "ルビ"],
-  #   ["W3C4","タグ", "ルビ"],
-  #   ["W3C5","タグ", "ルビ"],
-  #   ["W3C6","タグ", "ルビ"],
-  #   ["W3C7","タグ", "ルビ"],
-  #   ["W3C8","タグ", "ルビ"],
-  #   ["W3C9","タグ", "ルビ"],
-  #   ["W3C10","タグ", "ルビ"],
-  # ]
-  # inverted_index = {
-  #   "ruby on rails":[0,2],
-  #   "ruby 入門":[1],
-  #   "W3C":[0],
-  #   "タグ":[0, 2],
-  #   "ルビ":[0, 1, 2],
-  #   }
 
   otherKeyword = $('#trev').parent().addClass('dummy-parent')
   otherKeyword.prepend(
@@ -300,6 +290,9 @@ div.base {
 		/* opacity:0.7; */
 		background-color:rgba(0, 0, 0, 0.7);/* black; */
 		border-radius: 8px 0px 0px 8px;
+}
+li.dummy-parent div.active{
+		background-color:rgba(220, 28, 28, 0.7);/* red; */
 }
 div.base:hover {
 		border-radius: 8px 8px 8px 8px;
