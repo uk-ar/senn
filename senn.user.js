@@ -10,7 +10,7 @@
 console.log = unsafeWindow.console.log;
 p = console.log;
 letsJQuery = function() {
-  var $, $N, $X, D, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, num, otherKeyword, paragraphs, post, post_data, query, query_box, relatedKeyword, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, wordsIndex, _fn, _ref;
+  var $, $N, $X, D, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, negate, num, otherKeyword, paragraphs, post, post_data, query, query_box, refreshKeywords, relatedKeyword, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, wordsIndex, _fn, _ref;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -209,30 +209,51 @@ letsJQuery = function() {
   });
   window.Minibuffer.status('Preload2', 'Preloading2...');
   root_divs = paragraphs;
+  negate = function(words) {
+    var word, _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = words.length; _i < _len; _i++) {
+      word = words[_i];
+      _results.push(word[0] === "-" ? word.slice(1, word.length) : "-" + word);
+    }
+    return _results;
+  };
+  refreshKeywords = function(words_index, paragraphs) {
+    var a, b, exclude_keyword, i, include_keyword, negative_words, paragraph, word, words, _i, _len, _len2, _results;
+    _results = [];
+    for (i = 0, _len = paragraphs.length; i < _len; i++) {
+      paragraph = paragraphs[i];
+      include_keyword = $("div.include", paragraph);
+      exclude_keyword = $("div.exclude", paragraph);
+      words = words_index[i];
+      negative_words = negate(words);
+      for (_i = 0, _len2 = words.length; _i < _len2; _i++) {
+        word = words[_i];
+        a = $('<a>').text(word);
+        include_keyword.prepend(a);
+      }
+      _results.push((function() {
+        var _j, _len3, _results2;
+        _results2 = [];
+        for (_j = 0, _len3 = negative_words.length; _j < _len3; _j++) {
+          word = negative_words[_j];
+          b = $('<a>').text(word);
+          _results2.push(exclude_keyword.prepend(b));
+        }
+        return _results2;
+      })());
+    }
+    return _results;
+  };
   post("/preload2", post_data).next(function(response) {
-    var a, b, exclude_keyword, include_keyword, inverted_index, ret, root_div, word, words, words_index, _i, _j, _len, _len2;
+    var inverted_index, ret, words_index;
     ret = JSON.parse(response.responseText);
     console.log(ret);
     console.log(ret.status);
     window.Minibuffer.status('Preload2', "Preloading2... " + ret.status + ".", 3000);
     words_index = ret.words_index;
     inverted_index = ret.inverted_index;
-    p(root_divs);
-    for (_i = 0, _len = root_divs.length; _i < _len; _i++) {
-      root_div = root_divs[_i];
-      p(root_div);
-      include_keyword = $("div.include", root_div);
-      exclude_keyword = $("div.exclude", root_div);
-      words = words_index[_i];
-      p(words);
-      for (_j = 0, _len2 = words.length; _j < _len2; _j++) {
-        word = words[_j];
-        a = $('<a>').text(word);
-        include_keyword.prepend(a);
-        b = $('<a>').text(word);
-        exclude_keyword.prepend(b);
-      }
-    }
+    refreshKeywords(words_index, paragraphs);
   });
   otherKeyword = $('#trev').parent().addClass('dummy-parent');
   otherKeyword.prepend($('<div class="dummy">').css({

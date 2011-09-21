@@ -204,6 +204,25 @@ letsJQuery = ->
   window.Minibuffer.status('Preload2', 'Preloading2...')# + count
   root_divs = paragraphs
 
+  negate = (words) ->
+    for word in words
+      if word[0]=="-"
+        word.slice(1,word.length)
+      else
+        "-#{word}"
+  refreshKeywords = (words_index, paragraphs) ->
+    for paragraph, i in paragraphs
+      include_keyword = $("div.include", paragraph)
+      exclude_keyword = $("div.exclude", paragraph)
+      words = words_index[i]
+      negative_words = negate(words)
+      for word in words
+        a=$('<a>').text(word)
+        include_keyword.prepend(a)
+      for word in negative_words
+        b=$('<a>').text(word)
+        exclude_keyword.prepend(b)
+
   post("/preload2", post_data)
   .next (response) ->
     ret = JSON.parse(response.responseText);
@@ -213,30 +232,7 @@ letsJQuery = ->
       'Preload2', "Preloading2... #{ret.status}.", 3000) # + count
     words_index = ret.words_index
     inverted_index = ret.inverted_index
-    p root_divs
-    for root_div in root_divs
-      p root_div
-      include_keyword = $("div.include", root_div)
-      exclude_keyword = $("div.exclude", root_div)
-      words = words_index[_i]
-      # negate = (words) ->
-      #   for word in words
-      #     if word[0]=="-"
-      #       word.slice(1,word.length)
-      #     else
-      #       "-#{word}"
-      #p negate(["-1","1","-1","1"])
-      p words
-      for word in words
-        a=$('<a>').text(word)
-        include_keyword.prepend(a)
-        # if word[0] == "-"
-        #   word = word.slice(1, word.length)
-        # else
-        #   word = "-#{word}"
-        b=$('<a>').text(word)
-        exclude_keyword.prepend(b)
-
+    refreshKeywords(words_index, paragraphs)
     return #for deferred
   #.next () ->
 
