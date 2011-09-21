@@ -11,7 +11,7 @@
 console.log = unsafeWindow.console.log;
 p = console.log;
 letsJQuery = function() {
-  var $, $N, $X, D, all_urls, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, negate, num, otherKeyword, paragraphs, post, query, query_box, refreshKeywords, relatedKeyword, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, wordsIndex, _fn, _ref;
+  var $, $N, $X, D, all_urls, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, inverted_index, negate, num, otherKeyword, paragraphs, post, query, query_box, refreshKeywords, relatedKeyword, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, _fn, _ref;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -96,17 +96,10 @@ letsJQuery = function() {
   hideGraylayer = function(callback) {
     return graylayer.stop(true, true).fadeOut(speed);
   };
-  wordsIndex = {
-    "speed test": [0, 2],
-    "win high speed": [1],
-    "東京": [0],
-    "名古屋": [1],
-    "goo speed": [10, 11],
-    "usen speed": [11]
-  };
+  inverted_index = [];
   showParagraphs = function(word) {
     var i, index, _i, _len, _results;
-    index = wordsIndex[word] || [];
+    index = inverted_index[word] || [];
     _results = [];
     for (_i = 0, _len = index.length; _i < _len; _i++) {
       i = index[_i];
@@ -119,7 +112,7 @@ letsJQuery = function() {
   };
   hideParagraphs = function(word) {
     var i, index, _i, _len, _results;
-    index = wordsIndex[word] || [];
+    index = inverted_index[word] || [];
     _results = [];
     for (_i = 0, _len = index.length; _i < _len; _i++) {
       i = index[_i];
@@ -276,10 +269,9 @@ letsJQuery = function() {
     return _results;
   };
   post("/preload2").next(function(response) {
-    var inverted_index, ret, words_index;
+    var ret, words_index;
     ret = JSON.parse(response.responseText);
     console.log(ret);
-    console.log(ret.status);
     window.Minibuffer.status('Preload2', "Preloading2... " + ret.status + ".", 3000);
     words_index = ret.words_index;
     inverted_index = ret.inverted_index;

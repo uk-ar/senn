@@ -88,16 +88,16 @@ letsJQuery = ->
   hideGraylayer = (callback) ->
     graylayer.stop(true,true).fadeOut(speed)
 
-  wordsIndex ={"speed test":[0,2],"win high speed":[1], "東京":[0], "名古屋":[1], "goo speed":[10, 11], "usen speed":[11]}
-
+  #wordsIndex ={"speed test":[0,2],"win high speed":[1], "東京":[0], "名古屋":[1], "goo speed":[10, 11], "usen speed":[11]}
+  inverted_index = []
   showParagraphs = (word) ->
-    index = wordsIndex[word]||[]
+    index = inverted_index[word]||[]
     for i in index
       $(paragraphs[i]).css("z-index":baseZindex+1)
       $("div.dummy", paragraphs[i]).show()
 
   hideParagraphs = (word) ->
-    index = wordsIndex[word]||[]
+    index = inverted_index[word]||[]
     for i in index
       $(paragraphs[i]).css("z-index":"")# todo auto?
       $("div.dummy", paragraphs[i]).hide()
@@ -253,7 +253,6 @@ letsJQuery = ->
   .next (response) ->
     ret = JSON.parse(response.responseText);
     console.log(ret);
-    console.log(ret.status);
     window.Minibuffer.status(
       'Preload2', "Preloading2... #{ret.status}.", 3000) # + count
     words_index = ret.words_index
