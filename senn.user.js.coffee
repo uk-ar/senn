@@ -125,13 +125,21 @@ letsJQuery = ->
     # ,->
     #   hideBar(paragraph)
 
-    base = $('<div class="base">')
+    eventHandler = $('<div class="event-hander">')
       .css("z-index":baseZindex+3,"left":-barWidth)
-    paragraph.prepend(base)
+    paragraph.prepend(eventHandler)
+
+    base = $('<div class="base">')
+      # .css("z-index":baseZindex+3,"left":-barWidth)
+    eventHandler.prepend(base)
 
     bar = $('<div class="bar"><input type="checkbox"/>')
-      .css("width":barWidth)
+      .css("width":barWidth, "height":height)
     base.append(bar)
+    paragraph.hover ->
+      bar.show()
+    , ->
+      bar.hide()
 
     toggleMode = ->
       $("div.base").toggleClass("active")
@@ -149,24 +157,30 @@ letsJQuery = ->
       ).get()
       p irrelevant
       #post("/api2", query, relevant)
+
     main = $('<div class="main"></div>')
+    base.append(main)
+    base.hover ->
+      main.show()
+    , ->
+      main.hide()
 
     select = $('<div class="select"></div>')
       .append($('<ul>この文書を</ul>')
         .append($('<li class="active"><a>含む</a></li>'))
         .append($('<li><a>除外する</a></li>')))
-    base.append(select)
+    main.append(select)
 
     lineMargin = 10
-    base.append(
-      $('<div class="line">')
-      .css("height":height-2*lineMargin, "margin-top":lineMargin)
-    )
+    line = $('<div class="line">')
+    .css("height":height-2*lineMargin, "margin-top":lineMargin)
+    main.append(line)
 
     keywords = $('<div class="keywords">').css("width":400).
       append($('<div class="include active">')).
       append($('<div class="exclude">'))
-    base.append(keywords)
+    main.append(keywords)
+
     keywords.delegate 'a', 'click', (e) ->
       query_box.attr("value":"#{query} #{$(this).text()}")
       e.stopPropagation()
@@ -181,20 +195,22 @@ letsJQuery = ->
         showParagraphs($(this).text())
       else
         hideParagraphs($(this).text())
-    base.hover (e) ->
+
+    main.hover (e) ->
       showGraylayer()
     , ->
       hideGraylayer()
-      #e.stopPropagation()
 
     base.delegate 'a', 'click', (e) ->
       p 'clicked'
       $('a', select).parent().toggleClass("active")
       $('a', keywords).parent().toggleClass("active")
 
-    select.hide()
     bar.hide()
-    keywords.hide()
+    main.hide()
+    # select.hide()
+    # keywords.hide()
+    # line.hide()
 
     # bar.hover ->
     #   showKeywords(paragraph.parent())
@@ -205,10 +221,10 @@ letsJQuery = ->
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
   for num in [0..paragraphs.length]
     do (num) ->
-    $(paragraphs[num]).mouseenter()
-    $("div.bar:eq(#{num})").show()
-    $("div.select:eq(#{num})").show()
-    $("div.keywords:eq(#{num})").show()
+    # $(paragraphs[num]).mouseenter()
+    # $("div.bar:eq(#{num})")#.show()
+    # $("div.select:eq(#{num})").show()
+    # $("div.keywords:eq(#{num})").show()
 
   # main
   window.Minibuffer.status('Preload2', 'Preloading2...')# + count
@@ -282,15 +298,24 @@ letsJQuery = ->
 #)
 
 GM_addStyle('''
-div.base {
+div.event-hander {
 		position:absolute;
 		top:0;
 		right:0;
 		bottom:0;
+}
+div.base {
+		position:absolute;
+		/* top:0; */
+		/* bottom:0; */
 		/* opacity:0.7; */
 		background-color:rgba(0, 0, 0, 0.7);/* black; */
 		border-radius: 8px 0px 0px 8px;
 }
+/* div.base:hover { */
+/* 		right:auto; */
+/* } */
+/* for base color change */
 li.dummy-parent div.active{
 		background-color:rgba(220, 28, 28, 0.7);/* red; */
 }
