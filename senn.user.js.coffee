@@ -142,7 +142,7 @@ letsJQuery = ->
       bar.hide()
 
     toggleMode = ->
-      $("div.base").toggleClass("active")
+      $("div.base").toggleClass("mode")
 
     base.delegate 'input', 'click', (e) ->
       before = paragraphs.filter(".gm_ldrize_pinned")
@@ -316,7 +316,7 @@ div.base {
 /* 		right:auto; */
 /* } */
 /* for base color change */
-li.dummy-parent div.active{
+li.dummy-parent div.mode{
 		background-color:rgba(220, 28, 28, 0.7);/* red; */
 }
 div.base:hover {
