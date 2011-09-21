@@ -149,7 +149,7 @@ letsJQuery = ->
     wrapdiv.prepend(base)
 
     bar = $('<div class="bar"><input type="checkbox"/>')
-      .css("width":barWidth,"height":height)
+      .css("width":barWidth)#,"height":height)
     base.append(bar)
 
     select = $('<div class="select"></div>')
@@ -177,11 +177,20 @@ letsJQuery = ->
         GM_setValue("from_url", location.href)
         query_box[0].form.submit()
       , 0
+    keywords.delegate 'a', 'hover', (e) ->
+      if e.type == 'mouseenter'
+        showParagraphs($(this).text())
+      else
+        hideParagraphs($(this).text())
+    base.hover (e) ->
+      showGraylayer()
+    , ->
+      hideGraylayer()
+      #e.stopPropagation()
 
     base.delegate 'a', 'click', (e) ->
       $('a', select).parent().toggleClass("active")
       $('a', keywords).parent().toggleClass("active")
-
 
     select.hide()
     bar.hide()
@@ -249,7 +258,6 @@ letsJQuery = ->
   , hideTooltip
 
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
-  p paragraphs.length
   for num in [0..paragraphs.length]
     do (num) ->
     $(paragraphs[num]).mouseenter()
@@ -371,6 +379,7 @@ div.base {
 }
 div.base:hover {
 		border-radius: 8px 8px 8px 8px;
+		border: 2px solid white;
 }
 div.base a {
 		cursor: pointer;
@@ -428,8 +437,10 @@ div.exclude {
 
 div.dummy-parent {
 		position:relative;
-		z-index: 1002;							/* with gray */
 }/* dummy-parent */
+div.dummy-parent:hover {
+		z-index: 1002;							/* with gray */
+}
 div.dummy {
     top: -5px;
 		bottom: -5px;
