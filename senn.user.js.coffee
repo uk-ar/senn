@@ -145,13 +145,9 @@ letsJQuery = ->
     paragraph.addClass("dummy-parent")
     paragraph.prepend(
       $('<div class="dummy">').css("left":-barWidth-8).hide())
-    # paragraph.hover ->
-    #   showBar(paragraph)
-    # ,->
-    #   hideBar(paragraph)
 
     eventHandler = $('<div class="event-hander">')
-      .css("z-index":baseZindex+3,"left":-barWidth)
+      .css("left":-barWidth)#"z-index":
     paragraph.prepend(eventHandler)
 
     base = $('<div class="base">')
@@ -182,8 +178,8 @@ letsJQuery = ->
         get_url(this)
       ).get()
       window.Minibuffer.status('Send', 'Sending...')# + count
-      $("div.keywords a.word").empty()
       setTimeout ->
+        $("div.keywords a.word").empty()
         post("/preload2", query, relevant, irrelevant)
         .next (response) ->
           ret = JSON.parse(response.responseText);
@@ -203,10 +199,12 @@ letsJQuery = ->
       # p "hov"
       # main.slideLeft()
       main.show()
+      $(this).css("z-index":baseZindex+3)
     , ->
       # p "hov"
       # main.slideRight()
       main.hide()
+      $(this).css("z-index":"")
 
     select = $('<div class="select"></div>')
       .append($('<ul>この文書を</ul>')
@@ -295,9 +293,9 @@ letsJQuery = ->
       #
       include_keyword = $("div.include", paragraph)
       exclude_keyword = $("div.exclude", paragraph)
-      words = words_index[i].reverse()
+      words = words_index[i]
       negative_words = negate(words)
-      for word in words
+      for word in words.reverse()
         a=$('<a class="word">').text(word)
         include_keyword.prepend(a)
       for word in negative_words

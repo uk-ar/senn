@@ -172,7 +172,6 @@ letsJQuery = function() {
       "left": -barWidth - 8
     }).hide());
     eventHandler = $('<div class="event-hander">').css({
-      "z-index": baseZindex + 3,
       "left": -barWidth
     });
     paragraph.prepend(eventHandler);
@@ -207,8 +206,8 @@ letsJQuery = function() {
         return get_url(this);
       }).get();
       window.Minibuffer.status('Send', 'Sending...');
-      $("div.keywords a.word").empty();
       return setTimeout(function() {
+        $("div.keywords a.word").empty();
         return post("/preload2", query, relevant, irrelevant).next(function(response) {
           var ret, words_index;
           ret = JSON.parse(response.responseText);
@@ -223,9 +222,15 @@ letsJQuery = function() {
     main = $('<div class="main"></div>');
     base.append(main);
     base.hover(function() {
-      return main.show();
+      main.show();
+      return $(this).css({
+        "z-index": baseZindex + 3
+      });
     }, function() {
-      return main.hide();
+      main.hide();
+      return $(this).css({
+        "z-index": ""
+      });
     });
     select = $('<div class="select"></div>').append($('<ul>この文書を</ul>').append($('<li class="active"><a>含む</a></li>')).append($('<li><a>除外する</a></li>')));
     main.append(select);
@@ -297,16 +302,17 @@ letsJQuery = function() {
     return _results;
   };
   refreshKeywords = function(words_index, paragraphs) {
-    var a, b, exclude_keyword, i, include_keyword, negative_words, paragraph, word, words, _i, _len, _len2, _results;
+    var a, b, exclude_keyword, i, include_keyword, negative_words, paragraph, word, words, _i, _len, _len2, _ref2, _results;
     _results = [];
     for (i = 0, _len = paragraphs.length; i < _len; i++) {
       paragraph = paragraphs[i];
       include_keyword = $("div.include", paragraph);
       exclude_keyword = $("div.exclude", paragraph);
-      words = words_index[i].reverse();
+      words = words_index[i];
       negative_words = negate(words);
-      for (_i = 0, _len2 = words.length; _i < _len2; _i++) {
-        word = words[_i];
+      _ref2 = words.reverse();
+      for (_i = 0, _len2 = _ref2.length; _i < _len2; _i++) {
+        word = _ref2[_i];
         a = $('<a class="word">').text(word);
         include_keyword.prepend(a);
       }
