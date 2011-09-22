@@ -68,6 +68,11 @@ letsJQuery = ->
     $("div.keywords", context)
     .animate {"width":"hide"},speed,"swing",->
       $("div.base").css("left":"","right":"","width":barWidth)#not to move to graylayer
+  $.fn.slideLeft = ->
+    $(this).animate {"width":"show", "display":"show"}
+
+  $.fn.slideRight = ->
+    $(this).animate {"width":"hide", "display":"hide"}
 
   showBar = (context) ->
     #console.debug("showBar")
@@ -90,17 +95,37 @@ letsJQuery = ->
 
   #wordsIndex ={"speed test":[0,2],"win high speed":[1], "東京":[0], "名古屋":[1], "goo speed":[10, 11], "usen speed":[11]}
   inverted_index = []
+
+  negate_index = (index) ->
+    for i in [0..paragraphs.length]
+      if $.inArray(i, index) == -1
+        i
+      else
+        null
+
   showParagraphs = (word) ->
-    index = inverted_index[word]||[]
-    for i in index
-      $(paragraphs[i]).css("z-index":baseZindex+1)
-      $("div.dummy", paragraphs[i]).show()
+    if is_negative(word)
+      word = negate_word(word)
+      index = inverted_index[word]||[]
+      index = negate_index(index)
+      for i in index
+        $(paragraphs[i]).css("z-index":baseZindex+1)
+        $("div.dummy", paragraphs[i]).show()
+    else
+      index = inverted_index[word]||[]
+      for i in index
+        $(paragraphs[i]).css("z-index":baseZindex+1)
+        $("div.dummy", paragraphs[i]).show()
 
   hideParagraphs = (word) ->
-    index = inverted_index[word]||[]
-    for i in index
-      $(paragraphs[i]).css("z-index":"")# todo auto?
-      $("div.dummy", paragraphs[i]).hide()
+    #index = inverted_index[word]||[]
+    paragraphs.each ->
+      $(this).css("z-index":"")# todo auto?
+      $("div.dummy", this).hide()
+    # index = inverted_index[word]||[]
+    # for i in index
+    #   $(paragraphs[i]).css("z-index":"")# todo auto?
+    #   $("div.dummy", paragraphs[i]).hide()
   ####
   if GM_getValue("from_url") == document.referrer
     console.log("a")
@@ -142,6 +167,7 @@ letsJQuery = ->
       bar.hide()
 
     toggleMode = ->
+      $("div.keywords a.word").empty()
       $("div.base").toggleClass("mode")
 
     base.delegate 'input', 'click', (e) ->
@@ -155,14 +181,31 @@ letsJQuery = ->
       irrelevant = paragraphs.filter(":not(.gm_ldrize_pinned)").map( ->
         get_url(this)
       ).get()
-      p irrelevant
-      #post("/api2", query, relevant)
+      window.Minibuffer.status('Send', 'Sending...')# + count
+      $("div.keywords a.word").empty()
+      setTimeout ->
+        post("/preload2", query, relevant, irrelevant)
+        .next (response) ->
+          ret = JSON.parse(response.responseText);
+          console.log(ret);
+          window.Minibuffer.status(
+            'Send', "Sending... #{ret.status}.", 3000) # + count
+          words_index = ret.words_index
+          inverted_index = ret.inverted_index
+          #$("div.keywords a.word").empty()
+          refreshKeywords(words_index, paragraphs)
+          return #for deferred
+      , 0
 
     main = $('<div class="main"></div>')
     base.append(main)
     base.hover ->
+      # p "hov"
+      # main.slideLeft()
       main.show()
     , ->
+      # p "hov"
+      # main.slideRight()
       main.hide()
 
     select = $('<div class="select"></div>')
@@ -219,37 +262,50 @@ letsJQuery = ->
     #paragraph.css("z-index":baseZindex+1)
 
   #$("a:eq(1)", $("div.keywords").first()).mouseenter()
+  # all panel open
   for num in [0..paragraphs.length]
     do (num) ->
-    $(paragraphs[num]).mouseenter()
-    $("div.bar:eq(#{num})").show()
-    $("div.main:eq(#{num})").show()
-    # $("div.select:eq(#{num})").show()
-    # $("div.keywords:eq(#{num})").show()
+    # $(paragraphs[num]).mouseenter()
+    # $("div.bar:eq(#{num})").show()
+    # $("div.main:eq(#{num})").show()
 
   # main
   window.Minibuffer.status('Preload2', 'Preloading2...')# + count
   root_divs = paragraphs
 
-  negate = (words) ->
-    for word in words
+  is_negative = (word) ->
+    true if word[0]=="-"
+
+  negate_word = (word) ->
       if word[0]=="-"
         word.slice(1,word.length)
       else
         "-#{word}"
+
+  negate = (words) ->
+    for word in words
+      negate_word(word)
+
   refreshKeywords = (words_index, paragraphs) ->
     for paragraph, i in paragraphs
+      # while element.firstChild
+      #   element.removeChild(element.firstChild);
+      # $("div.include a").each ->
+      #   this.parentNode.removeChild(this)
+      #
       include_keyword = $("div.include", paragraph)
       exclude_keyword = $("div.exclude", paragraph)
-      words = words_index[i]
+      words = words_index[i].reverse()
       negative_words = negate(words)
       for word in words
-        a=$('<a>').text(word)
+        a=$('<a class="word">').text(word)
         include_keyword.prepend(a)
       for word in negative_words
-        b=$('<a>').text(word)
+        b=$('<a class="word">').text(word)
         exclude_keyword.prepend(b)
 
+  window.Minibuffer.status('Preload2', 'Preloading2...')# + count
+  #$("div.keywords a.word").empty()
   post("/preload2")
   .next (response) ->
     ret = JSON.parse(response.responseText);

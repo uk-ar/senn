@@ -11,7 +11,7 @@
 console.log = unsafeWindow.console.log;
 p = console.log;
 letsJQuery = function() {
-  var $, $N, $X, D, all_urls, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, inverted_index, negate, num, otherKeyword, paragraphs, post, query, query_box, refreshKeywords, relatedKeyword, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, _fn, _ref;
+  var $, $N, $X, D, all_urls, api_url, barWidth, baseZindex, get_url, grayZindex, graylayer, hideBar, hideGraylayer, hideKeywords, hideParagraphs, inverted_index, is_negative, negate, negate_index, negate_word, num, otherKeyword, paragraphs, post, query, query_box, refreshKeywords, relatedKeyword, root_divs, showBar, showGraylayer, showKeywords, showParagraphs, siteinfo, speed, _fn, _ref;
   $X = window.Minibuffer.$X;
   $N = window.Minibuffer.$N;
   $ = jQuery;
@@ -76,6 +76,18 @@ letsJQuery = function() {
       });
     });
   };
+  $.fn.slideLeft = function() {
+    return $(this).animate({
+      "width": "show",
+      "display": "show"
+    });
+  };
+  $.fn.slideRight = function() {
+    return $(this).animate({
+      "width": "hide",
+      "display": "hide"
+    });
+  };
   showBar = function(context) {
     return $("div.bar", context).show();
   };
@@ -97,31 +109,49 @@ letsJQuery = function() {
     return graylayer.stop(true, true).fadeOut(speed);
   };
   inverted_index = [];
-  showParagraphs = function(word) {
-    var i, index, _i, _len, _results;
-    index = inverted_index[word] || [];
+  negate_index = function(index) {
+    var i, _ref, _results;
     _results = [];
-    for (_i = 0, _len = index.length; _i < _len; _i++) {
-      i = index[_i];
-      $(paragraphs[i]).css({
-        "z-index": baseZindex + 1
-      });
-      _results.push($("div.dummy", paragraphs[i]).show());
+    for (i = 0, _ref = paragraphs.length; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
+      _results.push($.inArray(i, index) === -1 ? i : null);
     }
     return _results;
   };
+  showParagraphs = function(word) {
+    var i, index, _i, _j, _len, _len2, _results, _results2;
+    if (is_negative(word)) {
+      word = negate_word(word);
+      index = inverted_index[word] || [];
+      index = negate_index(index);
+      _results = [];
+      for (_i = 0, _len = index.length; _i < _len; _i++) {
+        i = index[_i];
+        $(paragraphs[i]).css({
+          "z-index": baseZindex + 1
+        });
+        _results.push($("div.dummy", paragraphs[i]).show());
+      }
+      return _results;
+    } else {
+      index = inverted_index[word] || [];
+      _results2 = [];
+      for (_j = 0, _len2 = index.length; _j < _len2; _j++) {
+        i = index[_j];
+        $(paragraphs[i]).css({
+          "z-index": baseZindex + 1
+        });
+        _results2.push($("div.dummy", paragraphs[i]).show());
+      }
+      return _results2;
+    }
+  };
   hideParagraphs = function(word) {
-    var i, index, _i, _len, _results;
-    index = inverted_index[word] || [];
-    _results = [];
-    for (_i = 0, _len = index.length; _i < _len; _i++) {
-      i = index[_i];
-      $(paragraphs[i]).css({
+    return paragraphs.each(function() {
+      $(this).css({
         "z-index": ""
       });
-      _results.push($("div.dummy", paragraphs[i]).hide());
-    }
-    return _results;
+      return $("div.dummy", this).hide();
+    });
   };
   if (GM_getValue("from_url") === document.referrer) {
     console.log("a");
@@ -159,6 +189,7 @@ letsJQuery = function() {
       return bar.hide();
     });
     toggleMode = function() {
+      $("div.keywords a.word").empty();
       return $("div.base").toggleClass("mode");
     };
     base.delegate('input', 'click', function(e) {
@@ -175,7 +206,19 @@ letsJQuery = function() {
       irrelevant = paragraphs.filter(":not(.gm_ldrize_pinned)").map(function() {
         return get_url(this);
       }).get();
-      return p(irrelevant);
+      window.Minibuffer.status('Send', 'Sending...');
+      $("div.keywords a.word").empty();
+      return setTimeout(function() {
+        return post("/preload2", query, relevant, irrelevant).next(function(response) {
+          var ret, words_index;
+          ret = JSON.parse(response.responseText);
+          console.log(ret);
+          window.Minibuffer.status('Send', "Sending... " + ret.status + ".", 3000);
+          words_index = ret.words_index;
+          inverted_index = ret.inverted_index;
+          refreshKeywords(words_index, paragraphs);
+        });
+      }, 0);
     });
     main = $('<div class="main"></div>');
     base.append(main);
@@ -229,18 +272,27 @@ letsJQuery = function() {
   _fn = function(num) {};
   for (num = 0, _ref = paragraphs.length; 0 <= _ref ? num <= _ref : num >= _ref; 0 <= _ref ? num++ : num--) {
     _fn(num);
-    $(paragraphs[num]).mouseenter();
-    $("div.bar:eq(" + num + ")").show();
-    $("div.main:eq(" + num + ")").show();
   }
   window.Minibuffer.status('Preload2', 'Preloading2...');
   root_divs = paragraphs;
+  is_negative = function(word) {
+    if (word[0] === "-") {
+      return true;
+    }
+  };
+  negate_word = function(word) {
+    if (word[0] === "-") {
+      return word.slice(1, word.length);
+    } else {
+      return "-" + word;
+    }
+  };
   negate = function(words) {
     var word, _i, _len, _results;
     _results = [];
     for (_i = 0, _len = words.length; _i < _len; _i++) {
       word = words[_i];
-      _results.push(word[0] === "-" ? word.slice(1, word.length) : "-" + word);
+      _results.push(negate_word(word));
     }
     return _results;
   };
@@ -251,11 +303,11 @@ letsJQuery = function() {
       paragraph = paragraphs[i];
       include_keyword = $("div.include", paragraph);
       exclude_keyword = $("div.exclude", paragraph);
-      words = words_index[i];
+      words = words_index[i].reverse();
       negative_words = negate(words);
       for (_i = 0, _len2 = words.length; _i < _len2; _i++) {
         word = words[_i];
-        a = $('<a>').text(word);
+        a = $('<a class="word">').text(word);
         include_keyword.prepend(a);
       }
       _results.push((function() {
@@ -263,7 +315,7 @@ letsJQuery = function() {
         _results2 = [];
         for (_j = 0, _len3 = negative_words.length; _j < _len3; _j++) {
           word = negative_words[_j];
-          b = $('<a>').text(word);
+          b = $('<a class="word">').text(word);
           _results2.push(exclude_keyword.prepend(b));
         }
         return _results2;
@@ -271,6 +323,7 @@ letsJQuery = function() {
     }
     return _results;
   };
+  window.Minibuffer.status('Preload2', 'Preloading2...');
   post("/preload2").next(function(response) {
     var ret, words_index;
     ret = JSON.parse(response.responseText);
