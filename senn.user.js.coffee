@@ -163,7 +163,7 @@ letsJQuery = ->
       bar.hide()
 
     toggleMode = ->
-      $("div.keywords a.word").empty()
+      $("div.keywords div").empty()
       $("div.base").toggleClass("mode")
 
     base.delegate 'input', 'click', (e) ->
@@ -179,7 +179,7 @@ letsJQuery = ->
       ).get()
       window.Minibuffer.status('Send', 'Sending...')# + count
       setTimeout ->
-        $("div.keywords a.word").empty()
+        $("div.keywords div").empty()
         post("/preload2", query, relevant, irrelevant)
         .next (response) ->
           ret = JSON.parse(response.responseText);

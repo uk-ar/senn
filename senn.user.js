@@ -1,4 +1,3 @@
-
 // ==UserScript==
 // @name           senn
 // @namespace      http://hoge
@@ -188,7 +187,7 @@ letsJQuery = function() {
       return bar.hide();
     });
     toggleMode = function() {
-      $("div.keywords a.word").empty();
+      $("div.keywords div").empty();
       return $("div.base").toggleClass("mode");
     };
     base.delegate('input', 'click', function(e) {
@@ -207,7 +206,7 @@ letsJQuery = function() {
       }).get();
       window.Minibuffer.status('Send', 'Sending...');
       return setTimeout(function() {
-        $("div.keywords a.word").empty();
+        $("div.keywords div").empty();
         return post("/preload2", query, relevant, irrelevant).next(function(response) {
           var ret, words_index;
           ret = JSON.parse(response.responseText);
