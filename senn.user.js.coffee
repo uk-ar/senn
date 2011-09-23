@@ -304,7 +304,7 @@ letsJQuery = ->
 
   window.Minibuffer.status('Preload2', 'Preloading2...')# + count
   #$("div.keywords a.word").empty()
-  post("/preload2")
+  post("/preload2", query)
   .next (response) ->
     ret = JSON.parse(response.responseText);
     console.log(ret);

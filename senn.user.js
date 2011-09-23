@@ -330,7 +330,7 @@ letsJQuery = function() {
     return _results;
   };
   window.Minibuffer.status('Preload2', 'Preloading2...');
-  post("/preload2").next(function(response) {
+  post("/preload2", query).next(function(response) {
     var ret, words_index;
     ret = JSON.parse(response.responseText);
     console.log(ret);
